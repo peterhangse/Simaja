@@ -171,7 +171,12 @@
 
     <!-- Add Sim Modal -->
     <Modal v-model="showAddSimModal" title="Lägg till Sim">
-      <SimForm @saved="onSimSaved" @cancel="showAddSimModal = false" />
+      <SimForm @saved="onSimSaved" @cancel="showAddSimModal = false" @import="switchToImport" />
+    </Modal>
+
+    <!-- Import from Screenshot Modal -->
+    <Modal v-model="showImportModal" title="Importera från screenshot">
+      <ScreenshotImportForm @imported="onSimImported" @cancel="showImportModal = false" />
     </Modal>
   </div>
 </template>
@@ -184,12 +189,14 @@ import AppHeader from '@/components/AppHeader.vue'
 import Modal from '@/components/Modal.vue'
 import WorldForm from '@/components/forms/WorldForm.vue'
 import SimForm from '@/components/forms/SimForm.vue'
+import ScreenshotImportForm from '@/components/forms/ScreenshotImportForm.vue'
 
 const authStore = useAuthStore()
 const simsStore = useSimsStore()
 
 const showAddWorldModal = ref(false)
 const showAddSimModal = ref(false)
+const showImportModal = ref(false)
 const showInsights = ref(false)
 
 const recentSims = computed(() => {
@@ -247,6 +254,15 @@ function onWorldSaved() {
 
 function onSimSaved() {
   showAddSimModal.value = false
+}
+
+function switchToImport() {
+  showAddSimModal.value = false
+  showImportModal.value = true
+}
+
+function onSimImported() {
+  showImportModal.value = false
 }
 </script>
 

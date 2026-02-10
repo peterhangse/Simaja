@@ -181,9 +181,17 @@
       <button
         type="button"
         @click="$emit('cancel')"
-        class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+        class="py-3 px-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
       >
         Avbryt
+      </button>
+      <button
+        v-if="!editMode"
+        type="button"
+        @click="$emit('import')"
+        class="py-3 px-4 bg-white text-gray-700 font-semibold rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors flex items-center gap-2"
+      >
+        📸 Importera
       </button>
       <button
         type="submit"
@@ -208,7 +216,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['saved', 'cancel'])
+const emit = defineEmits(['saved', 'cancel', 'import'])
 
 const simsStore = useSimsStore()
 
