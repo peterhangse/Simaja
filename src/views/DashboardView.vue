@@ -1,53 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-    <!-- Header -->
-    <header class="bg-white shadow-sm border-b border-gray-100">
-      <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <PlumbobIcon class="w-8 h-10 text-green-500" />
-          <h1 class="text-xl font-bold text-gray-800">
-            {{ authStore.userName }}s Simar
-          </h1>
-        </div>
-        <nav class="flex items-center gap-4">
-          <router-link 
-            to="/" 
-            class="nav-link"
-            :class="{ 'nav-link-active': $route.path === '/' }"
-          >
-            🏠 Hem
-          </router-link>
-          <router-link 
-            to="/worlds" 
-            class="nav-link"
-            :class="{ 'nav-link-active': $route.path.startsWith('/worlds') }"
-          >
-            🌍 Världar
-          </router-link>
-          <router-link 
-            to="/sims" 
-            class="nav-link"
-            :class="{ 'nav-link-active': $route.path.startsWith('/sims') }"
-          >
-            👤 Simar
-          </router-link>
-          <router-link 
-            to="/family-tree" 
-            class="nav-link"
-            :class="{ 'nav-link-active': $route.path === '/family-tree' }"
-          >
-            🌳 Släktträd
-          </router-link>
-          <button 
-            @click="logout"
-            class="ml-4 text-gray-500 hover:text-red-500 transition-colors"
-            title="Logga ut"
-          >
-            🚪
-          </button>
-        </nav>
-      </div>
-    </header>
+    <AppHeader />
 
     <!-- Main content -->
     <main class="max-w-7xl mx-auto px-4 py-8">
@@ -225,15 +178,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useSimsStore } from '@/stores/sims'
-import PlumbobIcon from '@/components/icons/PlumbobIcon.vue'
+import AppHeader from '@/components/AppHeader.vue'
 import Modal from '@/components/Modal.vue'
 import WorldForm from '@/components/forms/WorldForm.vue'
 import SimForm from '@/components/forms/SimForm.vue'
 
-const router = useRouter()
 const authStore = useAuthStore()
 const simsStore = useSimsStore()
 
@@ -290,11 +241,6 @@ onMounted(async () => {
   await simsStore.initializeData()
 })
 
-function logout() {
-  authStore.logout()
-  router.push('/login')
-}
-
 function onWorldSaved() {
   showAddWorldModal.value = false
 }
@@ -305,14 +251,6 @@ function onSimSaved() {
 </script>
 
 <style scoped>
-.nav-link {
-  @apply px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors;
-}
-
-.nav-link-active {
-  @apply bg-green-100 text-green-700;
-}
-
 .stat-card {
   @apply flex items-center gap-4 p-6 rounded-2xl border-2 shadow-sm;
 }
