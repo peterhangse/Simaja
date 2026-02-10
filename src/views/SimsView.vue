@@ -9,12 +9,20 @@
           <h2 class="text-3xl font-bold text-gray-800">👤 Alla Simar</h2>
           <p class="text-gray-500 mt-1">{{ simsStore.sims.length }} Simar totalt</p>
         </div>
-        <button
-          @click="showAddModal = true"
-          class="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-        >
-          <span>+</span> Ny Sim
-        </button>
+        <div class="flex gap-3">
+          <button
+            @click="showImportModal = true"
+            class="px-5 py-3 bg-white text-gray-700 font-semibold rounded-xl shadow-sm hover:shadow-md border border-gray-200 transition-all flex items-center gap-2"
+          >
+            <span>📸</span> Importera
+          </button>
+          <button
+            @click="showAddModal = true"
+            class="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+          >
+            <span>+</span> Ny Sim
+          </button>
+        </div>
       </div>
 
       <!-- Filters -->
@@ -116,6 +124,11 @@
     <Modal v-model="showAddModal" title="Lägg till Sim">
       <SimForm @saved="onSimSaved" @cancel="showAddModal = false" />
     </Modal>
+
+    <!-- Import from Screenshot Modal -->
+    <Modal v-model="showImportModal" title="Importera från screenshot">
+      <ScreenshotImportForm @imported="onSimImported" @cancel="showImportModal = false" />
+    </Modal>
   </div>
 </template>
 
@@ -125,15 +138,18 @@ import { useSimsStore } from '@/stores/sims'
 import AppHeader from '@/components/AppHeader.vue'
 import Modal from '@/components/Modal.vue'
 import SimForm from '@/components/forms/SimForm.vue'
+import ScreenshotImportForm from '@/components/forms/ScreenshotImportForm.vue'
+import { getAgeOptions } from '@/data/sims4Data'
 
 const simsStore = useSimsStore()
 
 const showAddModal = ref(false)
+const showImportModal = ref(false)
 const filterWorld = ref('')
 const filterAge = ref('')
 const searchQuery = ref('')
 
-const ageOptions = ['Baby', 'Toddler', 'Barn', 'Tonåring', 'Ung vuxen', 'Vuxen', 'Äldre']
+const ageOptions = getAgeOptions()
 
 const filteredSims = computed(() => {
   let result = [...simsStore.sims]
@@ -169,5 +185,9 @@ function getHouseInfo(houseId) {
 
 function onSimSaved() {
   showAddModal.value = false
+}
+
+function onSimImported() {
+  showImportModal.value = false
 }
 </script>

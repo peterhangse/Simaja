@@ -199,6 +199,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useSimsStore } from '@/stores/sims'
+import { getTraitOptions, getAspirationOptions, getCareerOptions, getSkillOptions, getAgeOptions } from '@/data/sims4Data'
 
 const props = defineProps({
   sim: {
@@ -240,42 +241,15 @@ const form = reactive({
   notes: ''
 })
 
-const ageOptions = ['Baby', 'Toddler', 'Barn', 'Tonåring', 'Ung vuxen', 'Vuxen', 'Äldre']
+const ageOptions = getAgeOptions()
 
-const traitOptions = [
-  'Aktiv', 'Ambitiös', 'Bokmal', 'Brommig', 'Cheerful', 'Clumsy',
-  'Creative', 'Evil', 'Family-Oriented', 'Foodie', 'Geek', 'Genius',
-  'Gloomy', 'Glutton', 'Good', 'Goofball', 'Hot-Headed', 'Jealous',
-  'Kleptomaniac', 'Lazy', 'Loner', 'Loves Outdoors', 'Materialistic',
-  'Mean', 'Music Lover', 'Neat', 'Noncommittal', 'Outgoing', 'Paranoid',
-  'Perfectionist', 'Romantic', 'Self-Assured', 'Slob', 'Snob', 'Squeamish'
-]
+const traitOptions = getTraitOptions()
 
-const aspirationOptions = {
-  'Kreativitet': ['Master Chef', 'Master Mixologist', 'Musical Genius', 'Painter Extraordinaire', 'Bestselling Author'],
-  'Fortune': ['Fabulously Wealthy', 'Mansion Baron'],
-  'Familia': ['Big Happy Family', 'Successful Lineage', 'Super Parent'],
-  'Kärlek': ['Serial Romantic', 'Soulmate'],
-  'Kunskap': ['Computer Whiz', 'Nerd Brain', 'Renaissance Sim'],
-  'Popularitet': ['Friend of the World', 'Party Animal', 'Joke Star'],
-  'Atletisk': ['Bodybuilder'],
-  'Natur': ['Angler Extraordinaire', 'Curator', 'The Curator', 'Freelance Botanist']
-}
+const aspirationOptions = getAspirationOptions()
 
-const careerOptions = [
-  'Arbetslös', 'Astronaut', 'Idrottare', 'Business', 'Kriminell',
-  'Kritiker', 'Underhållare', 'Målare', 'Hemlig agent',
-  'Författare', 'Teknik', 'Läkare', 'Vetenskapsman', 'Influencer',
-  'Skådespelare', 'Konservator', 'Ingenjör', 'Jurist', 'Militär'
-]
+const careerOptions = getCareerOptions()
 
-const skillOptions = [
-  'Matlagning', 'Mixologi', 'Gitarr', 'Piano', 'Violin', 'Fiol',
-  'Fitness', 'Programmering', 'Logik', 'Fiske', 'Trädgårdsarbete',
-  'Målning', 'Skrivande', 'Comedy', 'Charisma', 'Skicklighet',
-  'Fotografi', 'Raketteknik', 'Hantverk', 'Videosspel', 'Bowling',
-  'Vältalighet', 'Mekanik', 'Fotografering', 'DJ'
-]
+const skillOptions = getSkillOptions()
 
 onMounted(() => {
   if (props.sim) {
