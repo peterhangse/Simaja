@@ -153,6 +153,62 @@
           Skapa första världen 🌍
         </button>
       </div>
+      
+      <!-- Insights section (collapsed by default) -->
+      <div v-if="simsStore.sims.length > 0 && totalInsights > 0" class="mt-8">
+        <button 
+          @click="showInsights = !showInsights"
+          class="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          <span>💡</span>
+          <span class="text-sm">Visa insikter</span>
+          <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">{{ totalInsights }}</span>
+          <span class="text-xs">{{ showInsights ? '▲' : '▼' }}</span>
+        </button>
+        
+        <div v-if="showInsights" class="mt-4 bg-white rounded-xl p-4 shadow-sm">
+          <h4 class="text-sm font-semibold text-gray-600 mb-3">Att kolla på</h4>
+          <ul class="space-y-2">
+            <li v-if="insights.simsWithoutRelations.length > 0">
+              <router-link 
+                to="/sims" 
+                class="flex items-center gap-2 text-sm text-gray-600 hover:text-purple-600 transition-colors"
+                @click="setNoRelationsFilter"
+              >
+                <span class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-xs">
+                  {{ insights.simsWithoutRelations.length }}
+                </span>
+                <span>Simar utan relationer</span>
+                <span class="text-gray-400">→</span>
+              </router-link>
+            </li>
+            <li v-if="insights.elderSims.length > 0">
+              <router-link 
+                to="/sims" 
+                class="flex items-center gap-2 text-sm text-gray-600 hover:text-purple-600 transition-colors"
+              >
+                <span class="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center text-xs">
+                  {{ insights.elderSims.length }}
+                </span>
+                <span>Äldre Simar (kan dö snart)</span>
+                <span class="text-gray-400">→</span>
+              </router-link>
+            </li>
+            <li v-if="insights.incompleteSims.length > 0">
+              <router-link 
+                to="/sims" 
+                class="flex items-center gap-2 text-sm text-gray-600 hover:text-purple-600 transition-colors"
+              >
+                <span class="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-xs">
+                  {{ insights.incompleteSims.length }}
+                </span>
+                <span>Ofullständiga profiler</span>
+                <span class="text-gray-400">→</span>
+              </router-link>
+            </li>
+          </ul>
+        </div>
+      </div>
     </main>
 
     <!-- Add World Modal -->
@@ -183,12 +239,52 @@ const simsStore = useSimsStore()
 
 const showAddWorldModal = ref(false)
 const showAddSimModal = ref(false)
+const showInsights = ref(false)
 
 const recentSims = computed(() => {
   return [...simsStore.sims]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 6)
 })
+
+// Insights computations
+const insights = computed(() => {
+  // Find sims without any relationships
+  const simsWithRelations = new Set()
+  simsStore.relationships.forEach(r => {
+    simsWithRelations.add(r.sim1Id)
+    simsWithRelations.add(r.sim2Id)
+  })
+  const simsWithoutRelations = simsStore.sims.filter(s => !simsWithRelations.has(s.id))
+  
+  // Find elder sims
+  const elderSims = simsStore.sims.filter(s => 
+    s.age === 'Äldre' || s.age === 'Elder'
+  )
+  
+  // Find incomplete profiles (missing key info)
+  const incompleteSims = simsStore.sims.filter(s => {
+    const missingFields = !s.age || !s.gender || (s.traits?.length || 0) === 0
+    return missingFields
+  })
+  
+  return {
+    simsWithoutRelations,
+    elderSims,
+    incompleteSims
+  }
+})
+
+const totalInsights = computed(() => {
+  return insights.value.simsWithoutRelations.length + 
+         insights.value.elderSims.length + 
+         insights.value.incompleteSims.length
+})
+
+function setNoRelationsFilter() {
+  // This will be picked up by SimsView via router query or localStorage
+  localStorage.setItem('simaja_filter_relations', 'none')
+}
 
 onMounted(async () => {
   await simsStore.initializeData()

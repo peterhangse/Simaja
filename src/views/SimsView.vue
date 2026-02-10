@@ -9,7 +9,14 @@
           <h2 class="text-3xl font-bold text-gray-800">👤 Alla Simar</h2>
           <p class="text-gray-500 mt-1">{{ simsStore.sims.length }} Simar totalt</p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-2">
+          <button
+            @click="showQuickAddModal = true"
+            class="px-3 py-3 bg-white text-gray-600 rounded-xl shadow-sm hover:shadow-md border border-gray-200 transition-all"
+            title="Snabblägg Sim"
+          >
+            ⚡
+          </button>
           <button
             @click="showImportModal = true"
             class="px-5 py-3 bg-white text-gray-700 font-semibold rounded-xl shadow-sm hover:shadow-md border border-gray-200 transition-all flex items-center gap-2"
@@ -26,30 +33,79 @@
       </div>
 
       <!-- Filters -->
-      <div class="bg-white rounded-xl p-4 shadow-sm mb-6 flex flex-wrap gap-4 items-center">
-        <div class="flex items-center gap-2">
-          <span class="text-gray-500">🌍</span>
-          <select v-model="filterWorld" class="px-3 py-2 rounded-lg border border-gray-200">
-            <option value="">Alla världar</option>
-            <option v-for="world in simsStore.worlds" :key="world.id" :value="world.id">
-              {{ world.name }}
-            </option>
-          </select>
+      <div class="bg-white rounded-xl p-4 shadow-sm mb-6 space-y-3">
+        <!-- Primary filters row -->
+        <div class="flex flex-wrap gap-4 items-center">
+          <div class="flex items-center gap-2">
+            <span class="text-gray-500">🌍</span>
+            <select v-model="filterWorld" class="px-3 py-2 rounded-lg border border-gray-200">
+              <option value="">Alla världar</option>
+              <option v-for="world in simsStore.worlds" :key="world.id" :value="world.id">
+                {{ world.name }}
+              </option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-gray-500">👤</span>
+            <select v-model="filterAge" class="px-3 py-2 rounded-lg border border-gray-200">
+              <option value="">Alla åldrar</option>
+              <option v-for="age in ageOptions" :key="age" :value="age">{{ age }}</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Sök på namn..."
+              class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-purple-500 outline-none"
+            />
+          </div>
+          <button 
+            @click="showMoreFilters = !showMoreFilters"
+            class="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+          >
+            Fler filter {{ showMoreFilters ? '▲' : '▼' }}
+            <span v-if="activeFilterCount > 0" class="ml-1 w-5 h-5 bg-purple-100 text-purple-600 rounded-full text-xs flex items-center justify-center">
+              {{ activeFilterCount }}
+            </span>
+          </button>
         </div>
-        <div class="flex items-center gap-2">
-          <span class="text-gray-500">👤</span>
-          <select v-model="filterAge" class="px-3 py-2 rounded-lg border border-gray-200">
-            <option value="">Alla åldrar</option>
-            <option v-for="age in ageOptions" :key="age" :value="age">{{ age }}</option>
-          </select>
-        </div>
-        <div class="flex-1">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Sök på namn..."
-            class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-purple-500 outline-none"
-          />
+        
+        <!-- Expandable advanced filters -->
+        <div v-if="showMoreFilters" class="flex flex-wrap gap-4 items-center pt-3 border-t border-gray-100">
+          <div class="flex items-center gap-2">
+            <span class="text-gray-500">⚥</span>
+            <select v-model="filterGender" class="px-3 py-2 rounded-lg border border-gray-200">
+              <option value="">Alla kön</option>
+              <option value="Kvinna">Kvinna</option>
+              <option value="Man">Man</option>
+              <option value="Annat">Annat</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-gray-500">💕</span>
+            <select v-model="filterRelations" class="px-3 py-2 rounded-lg border border-gray-200">
+              <option value="">Alla</option>
+              <option value="has">Har relationer</option>
+              <option value="none">Utan relationer</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-gray-500">📋</span>
+            <select v-model="sortBy" class="px-3 py-2 rounded-lg border border-gray-200">
+              <option value="newest">Nyast först</option>
+              <option value="oldest">Äldst först</option>
+              <option value="name-asc">Namn A-Ö</option>
+              <option value="name-desc">Namn Ö-A</option>
+            </select>
+          </div>
+          <button 
+            v-if="activeFilterCount > 0"
+            @click="clearFilters"
+            class="text-sm text-red-500 hover:text-red-600"
+          >
+            Rensa filter
+          </button>
         </div>
       </div>
 
@@ -125,6 +181,11 @@
       <SimForm @saved="onSimSaved" @cancel="showAddModal = false" />
     </Modal>
 
+    <!-- Quick Add Sim Modal -->
+    <Modal v-model="showQuickAddModal" title="⚡ Snabblägg Sim">
+      <QuickAddSimForm @saved="onQuickAddSaved" @cancel="showQuickAddModal = false" />
+    </Modal>
+
     <!-- Import from Screenshot Modal -->
     <Modal v-model="showImportModal" title="Importera från screenshot">
       <ScreenshotImportForm @imported="onSimImported" @cancel="showImportModal = false" />
@@ -133,23 +194,60 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useSimsStore } from '@/stores/sims'
 import AppHeader from '@/components/AppHeader.vue'
 import Modal from '@/components/Modal.vue'
 import SimForm from '@/components/forms/SimForm.vue'
+import QuickAddSimForm from '@/components/forms/QuickAddSimForm.vue'
 import ScreenshotImportForm from '@/components/forms/ScreenshotImportForm.vue'
 import { getAgeOptions } from '@/data/sims4Data'
 
 const simsStore = useSimsStore()
+const router = useRouter()
 
 const showAddModal = ref(false)
+const showQuickAddModal = ref(false)
 const showImportModal = ref(false)
+const showMoreFilters = ref(false)
+
+// Primary filters
 const filterWorld = ref('')
 const filterAge = ref('')
 const searchQuery = ref('')
 
+// Advanced filters
+const filterGender = ref('')
+const filterRelations = ref('')
+const sortBy = ref('newest')
+
 const ageOptions = getAgeOptions()
+
+// Check for filter from dashboard insights link
+onMounted(() => {
+  const savedFilter = localStorage.getItem('simaja_filter_relations')
+  if (savedFilter) {
+    filterRelations.value = savedFilter
+    showMoreFilters.value = true
+    localStorage.removeItem('simaja_filter_relations')
+  }
+})
+
+// Count active advanced filters
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (filterGender.value) count++
+  if (filterRelations.value) count++
+  if (sortBy.value !== 'newest') count++
+  return count
+})
+
+function clearFilters() {
+  filterGender.value = ''
+  filterRelations.value = ''
+  sortBy.value = 'newest'
+}
 
 const filteredSims = computed(() => {
   let result = [...simsStore.sims]
@@ -173,6 +271,42 @@ const filteredSims = computed(() => {
     result = result.filter(s => s.name.toLowerCase().includes(query))
   }
 
+  // Filter by gender
+  if (filterGender.value) {
+    result = result.filter(s => s.gender === filterGender.value)
+  }
+
+  // Filter by relationships
+  if (filterRelations.value) {
+    const simsWithRelations = new Set()
+    simsStore.relationships.forEach(r => {
+      simsWithRelations.add(r.sim1Id)
+      simsWithRelations.add(r.sim2Id)
+    })
+    
+    if (filterRelations.value === 'has') {
+      result = result.filter(s => simsWithRelations.has(s.id))
+    } else if (filterRelations.value === 'none') {
+      result = result.filter(s => !simsWithRelations.has(s.id))
+    }
+  }
+
+  // Sort
+  switch (sortBy.value) {
+    case 'newest':
+      result.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+      break
+    case 'oldest':
+      result.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
+      break
+    case 'name-asc':
+      result.sort((a, b) => a.name.localeCompare(b.name, 'sv'))
+      break
+    case 'name-desc':
+      result.sort((a, b) => b.name.localeCompare(a.name, 'sv'))
+      break
+  }
+
   return result
 })
 
@@ -185,6 +319,14 @@ function getHouseInfo(houseId) {
 
 function onSimSaved() {
   showAddModal.value = false
+}
+
+function onQuickAddSaved(simId) {
+  showQuickAddModal.value = false
+  // Navigate to the new sim's profile so user can fill in more
+  if (simId) {
+    router.push(`/sims/${simId}`)
+  }
 }
 
 function onSimImported() {
