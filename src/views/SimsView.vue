@@ -1,54 +1,70 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+  <div class="min-h-screen">
     <AppHeader />
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
+    <main class="max-w-7xl mx-auto px-4 py-8 relative z-[1]">
       <!-- Page header -->
       <div class="flex items-center justify-between mb-8">
         <div>
-          <h2 class="text-3xl font-bold text-gray-800">👤 Alla Simar</h2>
-          <p class="text-gray-500 mt-1">{{ simsStore.sims.length }} Simar totalt</p>
+          <h2 class="text-3xl font-bold text-sims2-gold font-display"><Users :size="28" class="inline text-purple-400" /> All Sims</h2>
+          <p class="text-sims2-sky mt-1">{{ simsStore.activeSims.length }} active<span v-if="simsStore.plannedSims.length">, {{ simsStore.plannedSims.length }} planned</span></p>
         </div>
         <div class="flex gap-2">
           <button
             @click="showQuickAddModal = true"
-            class="px-3 py-3 bg-white text-gray-600 rounded-xl shadow-sm hover:shadow-md border border-gray-200 transition-all"
-            title="Snabblägg Sim"
+            class="s2-btn px-3 py-3"
+            title="Quick Add Sim"
           >
-            ⚡
+            <Zap :size="16" />
           </button>
           <button
             @click="showImportModal = true"
-            class="px-5 py-3 bg-white text-gray-700 font-semibold rounded-xl shadow-sm hover:shadow-md border border-gray-200 transition-all flex items-center gap-2"
+            class="s2-btn flex items-center gap-2 px-5 py-3"
           >
-            <span>📸</span> Importera
+            <Camera :size="16" /> Import
           </button>
           <button
             @click="showAddModal = true"
-            class="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+            class="s2-btn s2-btn-green flex items-center gap-2"
           >
-            <span>+</span> Ny Sim
+            <span>+</span> New Sim
           </button>
         </div>
       </div>
 
+      <!-- Status tabs -->
+      <div class="flex gap-2 mb-4">
+        <button
+          v-for="tab in statusTabs"
+          :key="tab.value"
+          @click="statusFilter = tab.value"
+          class="px-4 py-2 rounded-lg text-sm font-bold transition-all border-2"
+          :class="statusFilter === tab.value
+            ? 'bg-sims2-navy border-sims2-sky text-white shadow-md shadow-sims2-sky/20'
+            : 'bg-sims2-panel/60 text-sims2-sky border-transparent hover:border-sims2-sky/30'"
+        >
+          {{ tab.icon }} {{ tab.label }}
+          <span class="ml-1 opacity-70">({{ tab.count }})</span>
+        </button>
+      </div>
+
       <!-- Filters -->
-      <div class="bg-white rounded-xl p-4 shadow-sm mb-6 space-y-3">
+      <div class="s2-panel p-4 mb-6 space-y-3">
         <!-- Primary filters row -->
         <div class="flex flex-wrap gap-4 items-center">
           <div class="flex items-center gap-2">
-            <span class="text-gray-500">🌍</span>
-            <select v-model="filterWorld" class="px-3 py-2 rounded-lg border border-gray-200">
-              <option value="">Alla världar</option>
+            <Globe :size="16" class="text-sims2-sky" />
+            <select v-model="filterWorld" class="s2-select">
+              <option value="">All worlds</option>
               <option v-for="world in simsStore.worlds" :key="world.id" :value="world.id">
                 {{ world.name }}
               </option>
             </select>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-gray-500">👤</span>
-            <select v-model="filterAge" class="px-3 py-2 rounded-lg border border-gray-200">
-              <option value="">Alla åldrar</option>
+            <User :size="16" class="text-sims2-sky" />
+            <select v-model="filterAge" class="s2-select">
+              <option value="">All ages</option>
               <option v-for="age in ageOptions" :key="age" :value="age">{{ age }}</option>
             </select>
           </div>
@@ -56,74 +72,74 @@
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Sök på namn..."
-              class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:border-purple-500 outline-none"
+              placeholder="Search by name..."
+              class="w-full px-4 py-2 rounded-lg bg-black/30 border-2 border-sims2-sky/20 text-sims2-cream placeholder-sims2-sky/50 focus:border-sims2-sky/50 outline-none"
             />
           </div>
           <button 
             @click="showMoreFilters = !showMoreFilters"
-            class="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+            class="text-sm text-sims2-sky hover:text-sims2-gold flex items-center gap-1"
           >
-            Fler filter {{ showMoreFilters ? '▲' : '▼' }}
-            <span v-if="activeFilterCount > 0" class="ml-1 w-5 h-5 bg-purple-100 text-purple-600 rounded-full text-xs flex items-center justify-center">
+            More filters {{ showMoreFilters ? '▲' : '▼' }}
+            <span v-if="activeFilterCount > 0" class="ml-1 w-5 h-5 bg-purple-500/30 text-purple-300 rounded-full text-xs flex items-center justify-center">
               {{ activeFilterCount }}
             </span>
           </button>
         </div>
         
         <!-- Expandable advanced filters -->
-        <div v-if="showMoreFilters" class="flex flex-wrap gap-4 items-center pt-3 border-t border-gray-100">
+        <div v-if="showMoreFilters" class="flex flex-wrap gap-4 items-center pt-3 border-t border-sims2-sky/10">
           <div class="flex items-center gap-2">
-            <span class="text-gray-500">⚥</span>
-            <select v-model="filterGender" class="px-3 py-2 rounded-lg border border-gray-200">
-              <option value="">Alla kön</option>
-              <option value="Kvinna">Kvinna</option>
-              <option value="Man">Man</option>
-              <option value="Annat">Annat</option>
+            <span class="text-sims2-sky">⚥</span>
+            <select v-model="filterGender" class="s2-select">
+              <option value="">All genders</option>
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+              <option value="Other">Other</option>
             </select>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-gray-500">💕</span>
-            <select v-model="filterRelations" class="px-3 py-2 rounded-lg border border-gray-200">
-              <option value="">Alla</option>
-              <option value="has">Har relationer</option>
-              <option value="none">Utan relationer</option>
+            <Heart :size="16" class="text-sims2-sky" />
+            <select v-model="filterRelations" class="s2-select">
+              <option value="">All</option>
+              <option value="has">Has relationships</option>
+              <option value="none">No relationships</option>
             </select>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-gray-500">📋</span>
-            <select v-model="sortBy" class="px-3 py-2 rounded-lg border border-gray-200">
-              <option value="newest">Nyast först</option>
-              <option value="oldest">Äldst först</option>
-              <option value="name-asc">Namn A-Ö</option>
-              <option value="name-desc">Namn Ö-A</option>
+            <ArrowUpDown :size="16" class="text-sims2-sky" />
+            <select v-model="sortBy" class="s2-select">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="name-asc">Name A-Z</option>
+              <option value="name-desc">Name Z-A</option>
             </select>
           </div>
           <button 
             v-if="activeFilterCount > 0"
             @click="clearFilters"
-            class="text-sm text-red-500 hover:text-red-600"
+            class="text-sm text-red-400 hover:text-red-300"
           >
-            Rensa filter
+            Clear filters
           </button>
         </div>
       </div>
 
       <!-- Empty state -->
-      <div v-if="filteredSims.length === 0" class="text-center py-12 bg-white rounded-2xl shadow-sm">
-        <span class="text-6xl">👤</span>
-        <h3 class="text-xl font-bold text-gray-800 mt-4 mb-2">
-          {{ simsStore.sims.length === 0 ? 'Inga Simar ännu' : 'Inga Simar matchar filtret' }}
+      <div v-if="filteredSims.length === 0" class="text-center py-12 s2-panel">
+        <User :size="48" class="mx-auto text-sims2-sky opacity-50" />
+        <h3 class="text-xl font-bold text-sims2-gold mt-4 mb-2">
+          {{ simsStore.sims.length === 0 ? 'No Sims yet' : 'No Sims match the filter' }}
         </h3>
-        <p class="text-gray-500 mb-6">
-          {{ simsStore.sims.length === 0 ? 'Lägg till din första Sim!' : 'Prova ett annat filter.' }}
+        <p class="text-sims2-sky mb-6">
+          {{ simsStore.sims.length === 0 ? 'Add your first Sim!' : 'Try a different filter.' }}
         </p>
         <button 
           v-if="simsStore.sims.length === 0"
           @click="showAddModal = true"
-          class="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl shadow-lg"
+          class="s2-btn"
         >
-          Skapa första Sim
+          Create first Sim
         </button>
       </div>
 
@@ -133,29 +149,31 @@
           v-for="sim in filteredSims"
           :key="sim.id"
           :to="`/sims/${sim.id}`"
-          class="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-all group"
+          class="s2-card overflow-hidden group"
         >
           <!-- Sim image -->
-          <div class="h-32 bg-gradient-to-br from-purple-200 to-purple-300 relative overflow-hidden">
+          <div class="h-32 bg-gradient-to-br from-sims2-navy to-sims2-panel relative overflow-hidden">
             <img 
               v-if="sim.imageUrl" 
               :src="sim.imageUrl" 
               :alt="sim.name"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform"
             />
-            <span v-else class="absolute inset-0 flex items-center justify-center text-5xl opacity-50">👤</span>
+            <span v-else class="absolute inset-0 flex items-center justify-center"><User :size="36" class="text-sims2-sky opacity-40" /></span>
           </div>
 
           <!-- Sim info -->
           <div class="p-3">
-            <h3 class="font-bold text-gray-800 truncate">{{ sim.name }}</h3>
-            <p class="text-sm text-gray-500">{{ sim.age || 'Okänd ålder' }}</p>
+            <div class="flex items-center gap-1">
+              <h3 class="font-bold text-sims2-cream truncate">{{ sim.name }}</h3>
+              <span v-if="sim.status === 'planned'" class="flex-shrink-0 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 rounded text-[10px] font-semibold"><CloudCog :size="10" class="inline" /></span>
+            </div>
+            <p class="text-sm text-sims2-sky">{{ sim.age || 'Unknown age' }}</p>
             
             <!-- World/House info -->
-            <div class="mt-2 text-xs text-gray-400">
-              <span v-if="getHouseInfo(sim.houseId)">
-                🏠 {{ getHouseInfo(sim.houseId).house.name }}
-              </span>
+            <div class="mt-2 text-xs text-sims2-sky/60">
+              <span v-if="sim.status === 'planned' && !getHouseInfo(sim.houseId)" class="text-amber-400 flex items-center gap-1"><CloudCog :size="12" /> Planned</span>
+              <span v-else-if="getHouseInfo(sim.houseId)" class="flex items-center gap-1"><Home :size="12" /> {{ getHouseInfo(sim.houseId).house.name }}</span>
             </div>
 
             <!-- Traits preview -->
@@ -163,11 +181,11 @@
               <span 
                 v-for="trait in sim.traits.slice(0, 2)" 
                 :key="trait"
-                class="px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full text-xs"
+                class="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded-full text-xs"
               >
                 {{ trait }}
               </span>
-              <span v-if="sim.traits.length > 2" class="text-xs text-gray-400">
+              <span v-if="sim.traits.length > 2" class="text-xs text-sims2-sky/50">
                 +{{ sim.traits.length - 2 }}
               </span>
             </div>
@@ -177,17 +195,17 @@
     </main>
 
     <!-- Add Sim Modal -->
-    <Modal v-model="showAddModal" title="Lägg till Sim">
+    <Modal v-model="showAddModal" title="Add Sim">
       <SimForm @saved="onSimSaved" @cancel="showAddModal = false" />
     </Modal>
 
     <!-- Quick Add Sim Modal -->
-    <Modal v-model="showQuickAddModal" title="⚡ Snabblägg Sim">
+    <Modal v-model="showQuickAddModal" title="Quick Add Sim">
       <QuickAddSimForm @saved="onQuickAddSaved" @cancel="showQuickAddModal = false" />
     </Modal>
 
     <!-- Import from Screenshot Modal -->
-    <Modal v-model="showImportModal" title="Importera från screenshot">
+    <Modal v-model="showImportModal" title="Import from screenshot">
       <ScreenshotImportForm @imported="onSimImported" @cancel="showImportModal = false" />
     </Modal>
   </div>
@@ -203,6 +221,7 @@ import SimForm from '@/components/forms/SimForm.vue'
 import QuickAddSimForm from '@/components/forms/QuickAddSimForm.vue'
 import ScreenshotImportForm from '@/components/forms/ScreenshotImportForm.vue'
 import { getAgeOptions } from '@/data/sims4Data'
+import { Users, User, Globe, Home, Heart, Camera, Zap, CloudCog, ArrowUpDown } from 'lucide-vue-next'
 
 const simsStore = useSimsStore()
 const router = useRouter()
@@ -211,6 +230,13 @@ const showAddModal = ref(false)
 const showQuickAddModal = ref(false)
 const showImportModal = ref(false)
 const showMoreFilters = ref(false)
+const statusFilter = ref('all')
+
+const statusTabs = computed(() => [
+  { value: 'all', label: 'All', icon: '👥', count: simsStore.sims.length },
+  { value: 'active', label: 'Active', icon: '🟢', count: simsStore.activeSims.length },
+  { value: 'planned', label: 'Planned', icon: '💭', count: simsStore.plannedSims.length }
+])
 
 // Primary filters
 const filterWorld = ref('')
@@ -232,6 +258,11 @@ onMounted(() => {
     showMoreFilters.value = true
     localStorage.removeItem('simaja_filter_relations')
   }
+  const savedStatus = localStorage.getItem('simaja_filter_status')
+  if (savedStatus) {
+    statusFilter.value = savedStatus
+    localStorage.removeItem('simaja_filter_status')
+  }
 })
 
 // Count active advanced filters
@@ -251,6 +282,13 @@ function clearFilters() {
 
 const filteredSims = computed(() => {
   let result = [...simsStore.sims]
+
+  // Filter by status tab
+  if (statusFilter.value === 'active') {
+    result = result.filter(s => s.status !== 'planned')
+  } else if (statusFilter.value === 'planned') {
+    result = result.filter(s => s.status === 'planned')
+  }
 
   // Filter by world
   if (filterWorld.value) {
@@ -300,10 +338,10 @@ const filteredSims = computed(() => {
       result.sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
       break
     case 'name-asc':
-      result.sort((a, b) => a.name.localeCompare(b.name, 'sv'))
+      result.sort((a, b) => a.name.localeCompare(b.name, 'en'))
       break
     case 'name-desc':
-      result.sort((a, b) => b.name.localeCompare(a.name, 'sv'))
+      result.sort((a, b) => b.name.localeCompare(a.name, 'en'))
       break
   }
 

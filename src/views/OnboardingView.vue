@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
+  <div class="min-h-screen bg-gradient-to-br from-sims2-navy via-sims2-panel to-sims2-navy-light flex items-center justify-center p-4">
+    <div class="s2-panel w-full max-w-lg overflow-hidden">
       
       <!-- Progress dots -->
       <div class="flex justify-center gap-2 pt-6">
@@ -8,7 +8,7 @@
           v-for="i in totalSlides" 
           :key="i"
           class="w-2 h-2 rounded-full transition-all duration-300"
-          :class="currentSlide >= i ? 'bg-green-500 w-6' : 'bg-gray-300'"
+          :class="currentSlide >= i ? 'bg-green-400 w-6' : 'bg-sims2-sky/30'"
         />
       </div>
 
@@ -19,14 +19,14 @@
         <Transition name="slide" mode="out-in">
           <div v-if="currentSlide === 1" key="slide1" class="text-center">
             <div class="w-32 h-40 mx-auto mb-6 animate-bounce-slow">
-              <PlumbobIcon class="w-full h-full text-green-500" />
+              <PlumbobIcon class="w-full h-full text-green-400 plumbob-glow" />
             </div>
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">
-              Välkommen till Simaja! 🎮
+            <h2 class="text-3xl font-bold text-sims2-gold mb-4 font-display">
+              Welcome to Simaja! <Gamepad2 :size="28" class="inline text-green-400" />
             </h2>
-            <p class="text-gray-600 text-lg leading-relaxed">
-              Din personliga app för att hålla koll på alla dina Sims, 
-              deras världar, relationer och livshistorier.
+            <p class="text-sims2-cream text-lg leading-relaxed">
+              Your personal app to keep track of all your Sims, 
+              their worlds, relationships and life stories.
             </p>
           </div>
         </Transition>
@@ -35,26 +35,26 @@
         <Transition name="slide" mode="out-in">
           <div v-if="currentSlide === 2" key="slide2" class="text-center">
             <div class="grid grid-cols-3 gap-4 mb-6">
-              <div class="p-4 bg-green-50 rounded-2xl">
-                <span class="text-3xl">🌍</span>
-                <p class="text-sm text-gray-600 mt-2">Världar</p>
+              <div class="p-4 s2-panel-inner rounded-2xl">
+                <Globe :size="28" class="mx-auto text-green-400" />
+                <p class="text-sm text-sims2-cream mt-2">Worlds</p>
               </div>
-              <div class="p-4 bg-pink-50 rounded-2xl">
-                <span class="text-3xl">🏠</span>
-                <p class="text-sm text-gray-600 mt-2">Hus</p>
+              <div class="p-4 s2-panel-inner rounded-2xl">
+                <Home :size="28" class="mx-auto text-pink-400" />
+                <p class="text-sm text-sims2-cream mt-2">Houses</p>
               </div>
-              <div class="p-4 bg-blue-50 rounded-2xl">
-                <span class="text-3xl">👤</span>
-                <p class="text-sm text-gray-600 mt-2">Simar</p>
+              <div class="p-4 s2-panel-inner rounded-2xl">
+                <Users :size="28" class="mx-auto text-sims2-sky" />
+                <p class="text-sm text-sims2-cream mt-2">Sims</p>
               </div>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">
-              Organisera din Sims-värld
+            <h2 class="text-2xl font-bold text-sims2-gold mb-4">
+              Organize your Sims world
             </h2>
-            <p class="text-gray-600 leading-relaxed">
-              Skapa världar, bygg hus och fyll dem med Simar. 
-              Koppla ihop släktträd mellan olika världar och 
-              följ deras livsäventyr i dagboken.
+            <p class="text-sims2-cream leading-relaxed">
+              Create worlds, build houses and fill them with Sims. 
+              Connect family trees across different worlds and 
+              follow their life adventures in the diary.
             </p>
           </div>
         </Transition>
@@ -62,20 +62,20 @@
         <!-- Slide 3: Name input -->
         <Transition name="slide" mode="out-in">
           <div v-if="currentSlide === 3" key="slide3" class="text-center">
-            <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
-              <span class="text-4xl">👋</span>
+            <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-green-500/30 to-emerald-600/30 rounded-full flex items-center justify-center shadow-lg border-2 border-green-500/40">
+              <Hand :size="36" class="text-green-400" />
             </div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">
-              Vad heter du?
+            <h2 class="text-2xl font-bold text-sims2-gold mb-4">
+              What's your name?
             </h2>
-            <p class="text-gray-600 mb-6">
-              Vi vill göra din upplevelse personlig!
+            <p class="text-sims2-sky mb-6">
+              We want to make your experience personal!
             </p>
             <input
               v-model="userName"
               type="text"
-              placeholder="Ditt namn..."
-              class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none text-lg text-center"
+              placeholder="Your name..."
+              class="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-sims2-sky/20 text-sims2-cream placeholder-sims2-sky/40 focus:border-sims2-sky/50 outline-none text-lg text-center transition-all"
               @keyup.enter="completeOnboarding"
             />
           </div>
@@ -88,26 +88,26 @@
           <button
             v-if="currentSlide > 1"
             @click="previousSlide"
-            class="flex-1 py-3 px-6 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+            class="flex-1 s2-btn s2-btn-ghost py-3 px-6"
           >
-            ← Tillbaka
+            ← Back
           </button>
           
           <button
             v-if="currentSlide < totalSlides"
             @click="nextSlide"
-            class="flex-1 py-3 px-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+            class="flex-1 s2-btn s2-btn-green py-3 px-6"
           >
-            Nästa →
+            Next →
           </button>
           
           <button
             v-if="currentSlide === totalSlides"
             @click="completeOnboarding"
             :disabled="!userName.trim()"
-            class="flex-1 py-3 px-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            class="flex-1 s2-btn s2-btn-green py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Starta äventyret! 🚀
+            Start the adventure! <Rocket :size="16" class="inline" />
           </button>
         </div>
       </div>
@@ -120,6 +120,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import PlumbobIcon from '@/components/icons/PlumbobIcon.vue'
+import { Gamepad2, Globe, Home, Users, Hand, Rocket } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()

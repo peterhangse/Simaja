@@ -1,72 +1,72 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+  <div class="min-h-screen">
     <AppHeader />
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
+    <main class="max-w-7xl mx-auto px-4 py-8 relative z-[1]">
       <!-- Back link -->
-      <router-link to="/worlds" class="text-green-600 hover:text-green-700 flex items-center gap-1 mb-4">
-        ← Tillbaka till världar
+      <router-link to="/worlds" class="text-sims2-sky hover:text-sims2-gold flex items-center gap-1 mb-4">
+        ← Back to worlds
       </router-link>
 
       <!-- Loading -->
       <div v-if="!world" class="text-center py-12">
-        <div class="animate-spin w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full mx-auto"></div>
+        <div class="animate-spin w-12 h-12 border-4 border-sims2-sky border-t-transparent rounded-full mx-auto"></div>
       </div>
 
       <template v-else>
         <!-- World header -->
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
-          <div class="h-48 bg-gradient-to-br from-green-200 to-emerald-300 relative">
+        <div class="s2-panel overflow-hidden mb-8">
+          <div class="h-48 bg-gradient-to-br from-sims2-navy to-sims2-panel relative">
             <img 
               v-if="world.imageUrl" 
               :src="world.imageUrl" 
               :alt="world.name"
               class="w-full h-full object-cover"
             />
-            <span v-else class="absolute inset-0 flex items-center justify-center text-8xl opacity-30">🌍</span>
+            <span v-else class="absolute inset-0 flex items-center justify-center"><Globe :size="64" class="text-sims2-sky opacity-20" /></span>
           </div>
           <div class="p-6">
             <div class="flex items-start justify-between">
               <div>
-                <h2 class="text-3xl font-bold text-gray-800">{{ world.name }}</h2>
-                <p v-if="world.description" class="text-gray-500 mt-2">{{ world.description }}</p>
+                <h2 class="text-3xl font-bold text-sims2-gold font-display">{{ world.name }}</h2>
+                <p v-if="world.description" class="text-sims2-sky mt-2">{{ world.description }}</p>
               </div>
               <button
                 @click="showEditWorldModal = true"
-                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors"
+                class="s2-btn px-4 py-2 text-sm flex items-center gap-1"
               >
-                ✏️ Redigera
+                <Pencil :size="14" /> Edit
               </button>
             </div>
             
             <!-- Stats -->
-            <div class="flex gap-6 mt-4 text-gray-600">
-              <span>🏠 {{ houses.length }} hus</span>
-              <span>👤 {{ worldSims.length }} simar</span>
+            <div class="flex gap-6 mt-4 text-sims2-sky">
+              <span class="flex items-center gap-1"><Home :size="16" /> {{ houses.length }} houses</span>
+              <span class="flex items-center gap-1"><User :size="16" /> {{ worldSims.length }} sims</span>
             </div>
           </div>
         </div>
 
         <!-- Houses section -->
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-2xl font-bold text-gray-800">🏠 Hus i {{ world.name }}</h3>
+          <h3 class="text-2xl font-bold text-sims2-gold font-display"><Home :size="22" class="inline text-blue-400" /> Houses in {{ world.name }}</h3>
           <button
             @click="showAddHouseModal = true"
-            class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl shadow hover:shadow-lg transition-all"
+            class="s2-btn flex items-center gap-1"
           >
-            + Nytt hus
+            + New house
           </button>
         </div>
 
         <!-- Empty houses state -->
-        <div v-if="houses.length === 0" class="text-center py-8 bg-white rounded-2xl shadow-sm mb-8">
-          <span class="text-5xl">🏠</span>
-          <p class="text-gray-500 mt-4">Inga hus i denna värld ännu.</p>
+        <div v-if="houses.length === 0" class="text-center py-8 s2-panel mb-8">
+          <Home :size="40" class="mx-auto text-sims2-sky opacity-40" />
+          <p class="text-sims2-sky mt-4">No houses in this world yet.</p>
           <button 
             @click="showAddHouseModal = true"
-            class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors"
+            class="s2-btn mt-4"
           >
-            Skapa första huset
+            Create first house
           </button>
         </div>
 
@@ -75,56 +75,55 @@
           <div
             v-for="house in houses"
             :key="house.id"
-            class="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-shadow group"
+            class="s2-card overflow-hidden group"
           >
-            <div class="h-32 bg-gradient-to-br from-blue-200 to-blue-300 relative">
+            <div class="h-32 bg-gradient-to-br from-sims2-navy to-sims2-panel relative">
               <img 
                 v-if="house.imageUrl" 
                 :src="house.imageUrl" 
                 :alt="house.name"
                 class="w-full h-full object-cover"
               />
-              <span v-else class="absolute inset-0 flex items-center justify-center text-5xl opacity-50">🏠</span>
+              <span v-else class="absolute inset-0 flex items-center justify-center"><Home :size="36" class="text-sims2-sky opacity-30" /></span>
               
               <!-- Actions -->
               <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                 <button
                   @click.stop="editHouse(house)"
-                  class="w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center shadow"
+                  class="w-8 h-8 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center backdrop-blur-sm border border-white/20"
                 >
-                  ✏️
+                  <Pencil :size="14" class="text-white" />
                 </button>
                 <button
                   @click.stop="confirmDeleteHouse(house)"
-                  class="w-8 h-8 rounded-full bg-white/90 hover:bg-red-100 flex items-center justify-center shadow"
+                  class="w-8 h-8 rounded-full bg-black/50 hover:bg-red-900/70 flex items-center justify-center backdrop-blur-sm border border-white/20"
                 >
-                  🗑️
+                  <Trash2 :size="14" class="text-red-400" />
                 </button>
               </div>
             </div>
             
             <div class="p-4">
-              <h4 class="font-bold text-gray-800">{{ house.name }}</h4>
-              <p v-if="house.address" class="text-sm text-gray-500">{{ house.address }}</p>
+              <h4 class="font-bold text-sims2-cream">{{ house.name }}</h4>
+              <p v-if="house.address" class="text-sm text-sims2-sky">{{ house.address }}</p>
               
               <!-- Sims in house -->
               <div class="mt-3">
-                <p class="text-xs text-gray-400 mb-2">Boende:</p>
+                <p class="text-xs text-sims2-sky/60 mb-2">Residents:</p>
                 <div class="flex flex-wrap gap-1">
                   <router-link
                     v-for="sim in getSimsInHouse(house.id)"
                     :key="sim.id"
                     :to="`/sims/${sim.id}`"
-                    class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-200 to-purple-300 flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-purple-400 transition-all"
+                    class="hover:ring-2 hover:ring-sims2-gold transition-all rounded-full"
                     :title="sim.name"
                   >
-                    <img v-if="sim.imageUrl" :src="sim.imageUrl" class="w-full h-full object-cover" />
-                    <span v-else class="text-xs">👤</span>
+                    <SimAvatar :sim="sim" size="xs" />
                   </router-link>
                   <button
                     @click="addSimToHouse(house)"
-                    class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-green-100 hover:text-green-600 transition-colors text-gray-400"
-                    title="Lägg till Sim"
+                    class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-green-500/20 hover:text-green-400 transition-colors text-sims2-sky/50 border border-sims2-sky/20"
+                    title="Add Sim"
                   >
                     +
                   </button>
@@ -137,12 +136,12 @@
     </main>
 
     <!-- Edit World Modal -->
-    <Modal v-model="showEditWorldModal" title="Redigera värld">
+    <Modal v-model="showEditWorldModal" title="Edit world">
       <WorldForm :world="world" @saved="onWorldSaved" @cancel="showEditWorldModal = false" />
     </Modal>
 
     <!-- Add/Edit House Modal -->
-    <Modal v-model="showAddHouseModal" :title="editingHouse ? 'Redigera hus' : 'Skapa nytt hus'">
+    <Modal v-model="showAddHouseModal" :title="editingHouse ? 'Edit house' : 'Create new house'">
       <HouseForm 
         :house="editingHouse" 
         :worldId="worldId"
@@ -152,7 +151,7 @@
     </Modal>
 
     <!-- Add Sim Modal -->
-    <Modal v-model="showAddSimModal" title="Lägg till Sim">
+    <Modal v-model="showAddSimModal" title="Add Sim">
       <SimForm 
         :sim="prefilledSim"
         @saved="onSimSaved" 
@@ -161,24 +160,24 @@
     </Modal>
 
     <!-- Delete House confirmation -->
-    <Modal v-model="showDeleteHouseModal" title="Ta bort hus?">
+    <Modal v-model="showDeleteHouseModal" title="Delete house?">
       <div class="text-center">
-        <span class="text-5xl">⚠️</span>
-        <p class="text-gray-600 mt-4 mb-6">
-          Är du säker på att du vill ta bort <strong>{{ houseToDelete?.name }}</strong>?
+        <AlertTriangle :size="40" class="mx-auto text-amber-400" />
+        <p class="text-sims2-cream mt-4 mb-6">
+          Are you sure you want to delete <strong class="text-sims2-gold">{{ houseToDelete?.name }}</strong>?
         </p>
         <div class="flex gap-3">
           <button
             @click="showDeleteHouseModal = false"
-            class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+            class="flex-1 s2-btn s2-btn-ghost py-3 px-4"
           >
-            Avbryt
+            Cancel
           </button>
           <button
             @click="deleteHouse"
-            class="flex-1 py-3 px-4 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors"
+            class="flex-1 s2-btn s2-btn-danger py-3 px-4"
           >
-            Ta bort
+            Delete
           </button>
         </div>
       </div>
@@ -195,6 +194,8 @@ import Modal from '@/components/Modal.vue'
 import WorldForm from '@/components/forms/WorldForm.vue'
 import HouseForm from '@/components/forms/HouseForm.vue'
 import SimForm from '@/components/forms/SimForm.vue'
+import SimAvatar from '@/components/SimAvatar.vue'
+import { Globe, Home, User, Pencil, Trash2, AlertTriangle } from 'lucide-vue-next'
 
 const route = useRoute()
 const simsStore = useSimsStore()

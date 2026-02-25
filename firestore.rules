@@ -1,10 +1,54 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow all reads and writes for now (single user app)
-    // In production, you'd add authentication checks
-    match /{document=**} {
-      allow read, write: if true;
+    // Worlds - require name and createdAt on create
+    match /worlds/{worldId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['name', 'createdAt'])
+                    && request.resource.data.name is string;
+      allow update: if request.resource.data.name is string;
+      allow delete: if true;
+    }
+    
+    // Houses - require name and worldId
+    match /houses/{houseId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['name', 'worldId', 'createdAt'])
+                    && request.resource.data.name is string;
+      allow update: if request.resource.data.name is string;
+      allow delete: if true;
+    }
+    
+    // Sims - require name
+    match /sims/{simId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['name', 'createdAt'])
+                    && request.resource.data.name is string;
+      allow update, delete: if true;
+    }
+    
+    // Relationships - require both sim IDs and type
+    match /relationships/{relId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['sim1Id', 'sim2Id', 'type'])
+                    && request.resource.data.type is string;
+      allow update, delete: if true;
+    }
+    
+    // Diary entries - require simId, text, and date
+    match /diary/{entryId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['simId', 'text', 'date'])
+                    && request.resource.data.text is string;
+      allow update, delete: if true;
+    }
+
+    // Profiles - require name on create
+    match /profiles/{profileId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['name', 'createdAt'])
+                    && request.resource.data.name is string;
+      allow update, delete: if true;
     }
   }
 }

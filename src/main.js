@@ -7,4 +7,12 @@ import './style.css'
 const app = createApp(App)
 app.use(createPinia())
 app.use(router)
+
+// Global error handler
+app.config.errorHandler = (err, instance, info) => {
+  console.error('Unhandled app error:', err)
+  console.error('Component:', instance?.$options?.name || 'Unknown')
+  console.error('Info:', info)
+}
+
 app.mount('#app')

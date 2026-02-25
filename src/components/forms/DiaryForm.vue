@@ -2,8 +2,8 @@
   <form @submit.prevent="saveDiaryEntry" class="space-y-4">
     <!-- Date -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">
-        Datum
+      <label class="block s2-label mb-1">
+        Date
       </label>
       <input
         v-model="form.date"
@@ -14,12 +14,12 @@
 
     <!-- Text -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">
-        Vad hände? *
+      <label class="block s2-label mb-1">
+        What happened? *
       </label>
       <textarea
         v-model="form.text"
-        placeholder="Beskriv händelsen..."
+        placeholder="Describe the event..."
         rows="5"
         class="input-field resize-none"
         required
@@ -28,14 +28,14 @@
 
     <!-- Quick templates -->
     <div>
-      <p class="text-sm text-gray-500 mb-2">Snabbmallar:</p>
+      <p class="text-sm text-[var(--s2-sky)] mb-2">Quick templates:</p>
       <div class="flex flex-wrap gap-2">
         <button
           v-for="template in templates"
           :key="template.text"
           type="button"
           @click="addTemplate(template.text)"
-          class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm hover:bg-amber-200 transition-colors"
+          class="px-3 py-1 bg-amber-500/15 text-amber-300 rounded-full text-sm hover:bg-amber-500/25 transition-colors border border-amber-500/20"
         >
           {{ template.icon }} {{ template.label }}
         </button>
@@ -47,16 +47,16 @@
       <button
         type="button"
         @click="$emit('cancel')"
-        class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+        class="flex-1 s2-btn s2-btn-ghost py-3 px-4"
       >
-        Avbryt
+        Cancel
       </button>
       <button
         type="submit"
         :disabled="isSaving || !form.text.trim()"
-        class="flex-1 py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+        class="flex-1 s2-btn s2-btn-gold py-3 px-4 disabled:opacity-50"
       >
-        {{ isSaving ? 'Sparar...' : 'Spara' }}
+        {{ isSaving ? 'Saving...' : 'Save' }}
       </button>
     </div>
   </form>
@@ -85,14 +85,14 @@ const form = reactive({
 })
 
 const templates = [
-  { icon: '💑', label: 'Förälskelse', text: 'Träffade någon speciell idag! ' },
-  { icon: '💍', label: 'Giftermål', text: 'Giftermål! ' },
-  { icon: '👶', label: 'Barn', text: 'Fick barn! ' },
-  { icon: '🎂', label: 'Födelsedag', text: 'Firade födelsedag! ' },
-  { icon: '💼', label: 'Jobb', text: 'Nytt jobb som ' },
-  { icon: '🏠', label: 'Flytt', text: 'Flyttade till ' },
-  { icon: '⚰️', label: 'Död', text: 'Gick bort idag. ' },
-  { icon: '🎓', label: 'Uppnått', text: 'Uppnådde ' }
+  { icon: '💑', label: 'Romance', text: 'Met someone special today! ' },
+  { icon: '💍', label: 'Marriage', text: 'Got married! ' },
+  { icon: '👶', label: 'Baby', text: 'Had a baby! ' },
+  { icon: '🎂', label: 'Birthday', text: 'Celebrated birthday! ' },
+  { icon: '💼', label: 'Job', text: 'Got new job as ' },
+  { icon: '🏠', label: 'Moved', text: 'Moved to ' },
+  { icon: '⚰️', label: 'Death', text: 'Passed away today. ' },
+  { icon: '🎓', label: 'Achievement', text: 'Achieved ' }
 ]
 
 function addTemplate(text) {
@@ -119,9 +119,3 @@ async function saveDiaryEntry() {
   }
 }
 </script>
-
-<style scoped>
-.input-field {
-  @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition-all outline-none;
-}
-</style>

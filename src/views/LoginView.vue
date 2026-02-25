@@ -1,47 +1,47 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600 p-4">
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-sims2-navy via-sims2-panel to-sims2-navy-light p-4">
     <!-- Floating plumbobs background -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
       <div v-for="i in 8" :key="i" 
-           class="absolute animate-float opacity-20"
+           class="absolute animate-float opacity-10"
            :style="{ 
              left: `${Math.random() * 100}%`, 
              top: `${Math.random() * 100}%`,
              animationDelay: `${i * 0.5}s`
            }">
-        <PlumbobIcon class="w-12 h-12 text-white" />
+        <PlumbobIcon class="w-12 h-12 text-green-400" />
       </div>
     </div>
 
-    <div class="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
+    <div class="relative s2-panel p-8 w-full max-w-md">
       <!-- Plumbob logo -->
       <div class="flex justify-center mb-6">
         <div class="w-20 h-24 animate-pulse-slow">
-          <PlumbobIcon class="w-full h-full text-green-500" />
+          <PlumbobIcon class="w-full h-full text-green-400 plumbob-glow" />
         </div>
       </div>
 
-      <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">
+      <h1 class="text-3xl font-bold text-center text-sims2-gold mb-2 font-display">
         Simaja
       </h1>
-      <p class="text-center text-gray-500 mb-8">
-        Din personliga Sims-värld
+      <p class="text-center text-sims2-sky mb-8">
+        Your personal Sims world
       </p>
 
       <form @submit.prevent="handleLogin" class="space-y-6">
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-            Lösenord
+          <label for="password" class="block text-sm font-medium text-sims2-sky mb-2">
+            Password
           </label>
           <input
             id="password"
             v-model="password"
             type="password"
-            placeholder="Ange lösenord..."
-            class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none text-lg"
+            placeholder="Enter password..."
+            class="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-sims2-sky/20 text-sims2-cream placeholder-sims2-sky/40 focus:border-sims2-sky/50 outline-none text-lg transition-all"
             :class="{ 'border-red-400 shake': showError }"
           />
-          <p v-if="showError" class="mt-2 text-sm text-red-500">
+          <p v-if="showError" class="mt-2 text-sm text-red-400">
             {{ errorMessage }}
           </p>
         </div>
@@ -49,15 +49,15 @@
         <button
           type="submit"
           :disabled="isLoading"
-          class="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="w-full s2-btn s2-btn-green py-3 px-6 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span v-if="!isLoading">Kom in! 🎮</span>
+          <span v-if="!isLoading">Let me in! <Gamepad2 :size="16" class="inline" /></span>
           <span v-else class="flex items-center justify-center">
             <svg class="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
             </svg>
-            Loggar in...
+            Logging in...
           </span>
         </button>
       </form>
@@ -70,6 +70,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import PlumbobIcon from '@/components/icons/PlumbobIcon.vue'
+import { Gamepad2 } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -82,7 +83,7 @@ const errorMessage = ref('')
 async function handleLogin() {
   if (!password.value.trim()) {
     showError.value = true
-    errorMessage.value = 'Ange ett lösenord'
+    errorMessage.value = 'Please enter a password'
     return
   }
 
@@ -104,7 +105,7 @@ async function handleLogin() {
     }
   } catch (error) {
     showError.value = true
-    errorMessage.value = 'Något gick fel. Försök igen.'
+    errorMessage.value = 'Something went wrong. Please try again.'
   } finally {
     isLoading.value = false
   }

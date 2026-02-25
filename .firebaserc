@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "maja-e0953"
+  },
+  "targets": {
+    "maja-e0953": {
+      "hosting": {
+        "simaja": [
+          "simaja"
+        ]
+      }
+    }
+  }
+}

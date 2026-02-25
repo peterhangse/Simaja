@@ -1,16 +1,41 @@
 <template>
   <form @submit.prevent="saveSim" class="space-y-4">
-    <!-- Tabs -->
-    <div class="flex gap-2 border-b border-gray-200 mb-4">
+    <!-- Error message -->
+    <div v-if="errorMessage" class="bg-red-500/15 border border-red-500/30 rounded-xl p-3 text-sm text-red-300">
+      ⚠️ {{ errorMessage }}
+    </div>
+
+    <!-- Sim status toggle -->
+    <div class="flex gap-2 bg-black/20 rounded-xl p-1 border border-white/10">
       <button
-        v-for="tab in tabs"
+        type="button"
+        @click="form.status = 'active'"
+        class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all"
+        :class="form.status === 'active' ? 'bg-green-500/20 shadow text-green-400 border border-green-500/30' : 'text-[var(--s2-sky)] hover:text-white'"
+      >
+        👤 Active Sim
+      </button>
+      <button
+        type="button"
+        @click="form.status = 'planned'"
+        class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all"
+        :class="form.status === 'planned' ? 'bg-amber-500/20 shadow text-amber-400 border border-amber-500/30' : 'text-[var(--s2-sky)] hover:text-white'"
+      >
+        💡 Planned Sim
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-2 border-b border-white/10 mb-4">
+      <button
+        v-for="tab in visibleTabs"
         :key="tab.id"
         type="button"
         @click="activeTab = tab.id"
         class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px"
         :class="activeTab === tab.id 
-          ? 'border-green-500 text-green-600' 
-          : 'border-transparent text-gray-500 hover:text-gray-700'"
+          ? 'border-[var(--s2-gold)] text-[var(--s2-gold)]' 
+          : 'border-transparent text-[var(--s2-sky)] hover:text-white'"
       >
         {{ tab.icon }} {{ tab.label }}
       </button>
@@ -22,11 +47,11 @@
       <div class="flex gap-4">
         <div>
           <div 
-            class="w-24 h-24 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300 cursor-pointer hover:border-green-400 transition-colors"
+            class="w-24 h-24 rounded-xl bg-black/20 flex items-center justify-center overflow-hidden s2-upload-zone cursor-pointer transition-colors"
             @click="$refs.fileInput.click()"
           >
             <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
-            <span v-else class="text-3xl">👤</span>
+            <span v-else class="text-3xl">{{ form.status === 'planned' ? '💡' : '👤' }}</span>
           </div>
           <input
             type="file"
@@ -40,30 +65,30 @@
           <input
             v-model="form.name"
             type="text"
-            placeholder="Simens namn *"
+            placeholder="Sim name *"
             class="input-field"
             required
           />
           <div class="grid grid-cols-2 gap-2">
             <select v-model="form.age" class="input-field">
-              <option value="">Ålder...</option>
+              <option value="">Age...</option>
               <option v-for="age in ageOptions" :key="age" :value="age">{{ age }}</option>
             </select>
             <select v-model="form.gender" class="input-field">
-              <option value="">Kön...</option>
-              <option value="Kvinna">Kvinna</option>
-              <option value="Man">Man</option>
-              <option value="Annat">Annat</option>
+              <option value="">Gender...</option>
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+              <option value="Other">Other</option>
             </select>
           </div>
         </div>
       </div>
 
-      <!-- House selection -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Hus *</label>
-        <select v-model="form.houseId" class="input-field" required>
-          <option value="">Välj hus...</option>
+      <!-- House selection (only for active sims) -->
+      <div v-if="form.status === 'active'">
+        <label class="block s2-label mb-1">House *</label>
+        <select v-model="form.houseId" class="input-field" :required="form.status === 'active'">
+          <option value="">Choose house...</option>
           <optgroup v-for="world in simsStore.worlds" :key="world.id" :label="world.name">
             <option 
               v-for="house in simsStore.getHousesByWorld(world.id)" 
@@ -74,9 +99,31 @@
             </option>
           </optgroup>
         </select>
-        <p v-if="simsStore.houses.length === 0" class="text-sm text-amber-600 mt-1">
-          ⚠️ Du måste skapa ett hus först
+        <p v-if="simsStore.houses.length === 0" class="text-sm text-amber-400 mt-1">
+          ⚠️ You need to create a house first
         </p>
+      </div>
+
+      <!-- Planned sim concept (only for planned sims) -->
+      <div v-if="form.status === 'planned'" class="space-y-3">
+        <div>
+          <label class="block s2-label mb-1">Concept</label>
+          <textarea
+            v-model="form.concept"
+            placeholder="Describe your idea for this Sim..."
+            rows="2"
+            class="input-field resize-none"
+          />
+        </div>
+        <div>
+          <label class="block s2-label mb-1">Interests</label>
+          <input
+            v-model="form.interests"
+            type="text"
+            placeholder="e.g. cooking, gardening, music (comma separated)"
+            class="input-field"
+          />
+        </div>
       </div>
     </div>
 
@@ -84,8 +131,8 @@
     <div v-show="activeTab === 'personality'" class="space-y-4">
       <!-- Traits -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Personlighetsdrag (välj upp till 3)
+        <label class="block s2-label mb-2">
+          Traits (choose up to 3)
         </label>
         <div class="flex flex-wrap gap-2">
           <button
@@ -95,8 +142,8 @@
             @click="toggleTrait(trait)"
             class="px-3 py-1 rounded-full text-sm transition-all"
             :class="form.traits.includes(trait) 
-              ? 'bg-green-500 text-white' 
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+              ? 'bg-green-500/30 text-green-300 ring-1 ring-green-500/50' 
+              : 'bg-white/10 text-[var(--s2-cream)] hover:bg-white/20'"
             :disabled="form.traits.length >= 3 && !form.traits.includes(trait)"
           >
             {{ trait }}
@@ -106,9 +153,9 @@
 
       <!-- Aspiration -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Aspiration</label>
+        <label class="block s2-label mb-1">Aspiration</label>
         <select v-model="form.aspiration" class="input-field">
-          <option value="">Välj aspiration...</option>
+          <option value="">Choose aspiration...</option>
           <optgroup v-for="(asps, category) in aspirationOptions" :key="category" :label="category">
             <option v-for="asp in asps" :key="asp" :value="asp">{{ asp }}</option>
           </optgroup>
@@ -120,32 +167,32 @@
     <div v-show="activeTab === 'appearance'" class="space-y-4">
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Hårfärg</label>
-          <input v-model="form.hairColor" type="text" placeholder="T.ex. Brun" class="input-field" />
+          <label class="block s2-label mb-1">Hair color</label>
+          <input v-model="form.hairColor" type="text" placeholder="e.g. Brown" class="input-field" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Ögonfärg</label>
-          <input v-model="form.eyeColor" type="text" placeholder="T.ex. Blå" class="input-field" />
+          <label class="block s2-label mb-1">Eye color</label>
+          <input v-model="form.eyeColor" type="text" placeholder="e.g. Blue" class="input-field" />
         </div>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Klädstil</label>
-        <input v-model="form.style" type="text" placeholder="Beskriv stilen..." class="input-field" />
+        <label class="block s2-label mb-1">Clothing style</label>
+        <input v-model="form.style" type="text" placeholder="Describe the style..." class="input-field" />
       </div>
     </div>
 
     <!-- Career Tab -->
     <div v-show="activeTab === 'career'" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Karriär</label>
+        <label class="block s2-label mb-1">Career</label>
         <select v-model="form.career" class="input-field">
-          <option value="">Välj karriär...</option>
+          <option value="">Choose career...</option>
           <option v-for="career in careerOptions" :key="career" :value="career">{{ career }}</option>
         </select>
       </div>
       
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Färdigheter</label>
+        <label class="block s2-label mb-2">Skills</label>
         <div class="flex flex-wrap gap-2">
           <button
             v-for="skill in skillOptions"
@@ -154,8 +201,8 @@
             @click="toggleSkill(skill)"
             class="px-3 py-1 rounded-full text-sm transition-all"
             :class="form.skills.includes(skill) 
-              ? 'bg-blue-500 text-white' 
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+              ? 'bg-blue-500/30 text-blue-300 ring-1 ring-blue-500/50' 
+              : 'bg-white/10 text-[var(--s2-cream)] hover:bg-white/20'"
           >
             {{ skill }}
           </button>
@@ -166,10 +213,10 @@
     <!-- Notes Tab -->
     <div v-show="activeTab === 'notes'" class="space-y-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Anteckningar</label>
+        <label class="block s2-label mb-1">Notes</label>
         <textarea
           v-model="form.notes"
-          placeholder="Skriv anteckningar om denna Sim..."
+          placeholder="Write notes about this Sim..."
           rows="5"
           class="input-field resize-none"
         />
@@ -177,35 +224,35 @@
     </div>
 
     <!-- Actions -->
-    <div class="flex gap-3 pt-4 border-t border-gray-100">
+    <div class="flex gap-3 pt-4 border-t border-white/10">
       <button
         type="button"
         @click="$emit('cancel')"
-        class="py-3 px-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+        class="s2-btn s2-btn-ghost py-3 px-4"
       >
-        Avbryt
+        Cancel
       </button>
       <button
         v-if="!editMode"
         type="button"
         @click="$emit('import')"
-        class="py-3 px-4 bg-white text-gray-700 font-semibold rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors flex items-center gap-2"
+        class="s2-btn s2-btn-ghost py-3 px-4 flex items-center gap-2"
       >
-        📸 Importera
+        📸 Import
       </button>
       <button
         type="submit"
-        :disabled="isSaving || !form.name.trim() || !form.houseId"
-        class="flex-1 py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+        :disabled="isSaving || !form.name.trim() || (form.status === 'active' && !form.houseId)"
+        class="flex-1 s2-btn s2-btn-green py-3 px-4 disabled:opacity-50"
       >
-        {{ isSaving ? 'Sparar...' : (editMode ? 'Uppdatera' : 'Skapa Sim') }}
+        {{ isSaving ? 'Saving...' : (editMode ? 'Update' : 'Create Sim') }}
       </button>
     </div>
   </form>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useSimsStore } from '@/stores/sims'
 import { getTraitOptions, getAspirationOptions, getCareerOptions, getSkillOptions, getAgeOptions } from '@/data/sims4Data'
 
@@ -225,20 +272,26 @@ const isSaving = ref(false)
 const activeTab = ref('basic')
 const imagePreview = ref(null)
 const imageFile = ref(null)
+const errorMessage = ref('')
 
-const tabs = [
-  { id: 'basic', label: 'Grundläggande', icon: '👤' },
-  { id: 'personality', label: 'Personlighet', icon: '💭' },
-  { id: 'appearance', label: 'Utseende', icon: '👗' },
-  { id: 'career', label: 'Karriär', icon: '💼' },
-  { id: 'notes', label: 'Anteckningar', icon: '📝' }
+const allTabs = [
+  { id: 'basic', label: 'Basic', icon: '👤' },
+  { id: 'personality', label: 'Personality', icon: '💭' },
+  { id: 'appearance', label: 'Appearance', icon: '👗' },
+  { id: 'career', label: 'Career', icon: '💼' },
+  { id: 'notes', label: 'Notes', icon: '📝' }
 ]
+
+const visibleTabs = computed(() => allTabs)
 
 const form = reactive({
   name: '',
   age: '',
   gender: '',
   houseId: '',
+  status: 'active',
+  concept: '',
+  interests: '',
   traits: [],
   aspiration: '',
   hairColor: '',
@@ -267,6 +320,9 @@ onMounted(() => {
       age: props.sim.age || '',
       gender: props.sim.gender || '',
       houseId: props.sim.houseId || '',
+      status: props.sim.status || 'active',
+      concept: props.sim.concept || '',
+      interests: (props.sim.interests || []).join(', '),
       traits: props.sim.traits || [],
       aspiration: props.sim.aspiration || '',
       hairColor: props.sim.hairColor || '',
@@ -301,20 +357,32 @@ function toggleSkill(skill) {
 function handleImageChange(event) {
   const file = event.target.files[0]
   if (file) {
+    errorMessage.value = ''
+    if (file.size > 5 * 1024 * 1024) {
+      errorMessage.value = 'Image is too large. Maximum size is 5 MB.'
+      return
+    }
     imageFile.value = file
     imagePreview.value = URL.createObjectURL(file)
   }
 }
 
 async function saveSim() {
-  if (!form.name.trim() || !form.houseId) return
+  if (!form.name.trim()) return
+  if (form.status === 'active' && !form.houseId) return
 
   isSaving.value = true
+  errorMessage.value = ''
 
   try {
     let imageUrl = props.sim?.imageUrl || null
 
     if (imageFile.value) {
+      if (imageFile.value.size > 5 * 1024 * 1024) {
+        errorMessage.value = 'Image is too large. Maximum size is 5 MB.'
+        isSaving.value = false
+        return
+      }
       const path = `sims/${Date.now()}_${imageFile.value.name}`
       imageUrl = await simsStore.uploadImage(imageFile.value, path)
     }
@@ -323,7 +391,10 @@ async function saveSim() {
       name: form.name.trim(),
       age: form.age,
       gender: form.gender,
-      houseId: form.houseId,
+      houseId: form.status === 'active' ? form.houseId : '',
+      status: form.status,
+      concept: form.concept,
+      interests: form.interests.split(',').map(i => i.trim()).filter(Boolean),
       traits: form.traits,
       aspiration: form.aspiration,
       hairColor: form.hairColor,
@@ -344,14 +415,9 @@ async function saveSim() {
     emit('saved')
   } catch (error) {
     console.error('Error saving sim:', error)
+    errorMessage.value = 'Failed to save Sim. Please try again.'
   } finally {
     isSaving.value = false
   }
 }
 </script>
-
-<style scoped>
-.input-field {
-  @apply w-full px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none text-sm;
-}
-</style>

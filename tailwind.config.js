@@ -13,7 +13,18 @@ export default {
           dark: '#006d35'
         },
         'sims-pink': '#e91e63',
-        'sims-blue': '#2196f3'
+        'sims-blue': '#2196f3',
+        'sims2': {
+          navy: '#0f2438',
+          'navy-mid': '#162d48',
+          'navy-light': '#1e3a5c',
+          sky: '#6ba3d6',
+          gold: '#d4a84c',
+          'gold-light': '#f0d97a',
+          cream: '#e8dfc8',
+          'warm-bg': '#162d48',
+          panel: '#162d48'
+        }
       },
       fontFamily: {
         sans: ['Nunito', 'system-ui', 'sans-serif'],

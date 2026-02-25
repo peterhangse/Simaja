@@ -49,7 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
         return { success: true }
       }
       
-      return { success: false, error: 'Fel lösenord' }
+      return { success: false, error: 'Wrong password' }
     } catch (error) {
       // Fallback for development without backend
       // This will be replaced by actual auth in production
@@ -63,7 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
         return { success: true }
       }
       
-      return { success: false, error: 'Fel lösenord' }
+      return { success: false, error: 'Wrong password' }
     }
   }
 

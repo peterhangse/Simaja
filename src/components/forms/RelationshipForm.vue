@@ -2,11 +2,11 @@
   <form @submit.prevent="saveRelationship" class="space-y-4">
     <!-- Select other Sim -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">
-        Välj Sim *
+      <label class="block s2-label mb-1">
+        Choose Sim *
       </label>
       <select v-model="form.otherSimId" class="input-field" required>
-        <option value="">Välj en Sim...</option>
+        <option value="">Choose a Sim...</option>
         <optgroup v-for="world in groupedSims" :key="world.name" :label="world.name">
           <option 
             v-for="s in world.sims" 
@@ -14,7 +14,7 @@
             :value="s.id"
             :disabled="s.id === simId"
           >
-            {{ s.name }}{{ s.id === simId ? ' (denna Sim)' : '' }}
+            {{ s.name }}{{ s.id === simId ? ' (this Sim)' : '' }}
           </option>
         </optgroup>
       </select>
@@ -22,8 +22,8 @@
 
     <!-- Relationship type -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-2">
-        Relationstyp *
+      <label class="block s2-label mb-2">
+        Relationship type *
       </label>
       <div class="grid grid-cols-3 gap-2">
         <button
@@ -33,8 +33,8 @@
           @click="form.type = type.value"
           class="px-3 py-2 rounded-xl text-sm transition-all flex flex-col items-center"
           :class="form.type === type.value 
-            ? `${type.bgActive} ${type.textActive} ring-2 ring-offset-1 ${type.ring}` 
-            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+            ? `${type.bgActive} ${type.textActive} ring-2 ring-offset-1 ring-offset-transparent ${type.ring}` 
+            : 'bg-white/10 text-[var(--s2-cream)] hover:bg-white/20'"
         >
           <span class="text-lg">{{ type.icon }}</span>
           <span>{{ type.label }}</span>
@@ -47,16 +47,16 @@
       <button
         type="button"
         @click="$emit('cancel')"
-        class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+        class="flex-1 s2-btn s2-btn-ghost py-3 px-4"
       >
-        Avbryt
+        Cancel
       </button>
       <button
         type="submit"
         :disabled="isSaving || !form.otherSimId || !form.type"
-        class="flex-1 py-3 px-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+        class="flex-1 s2-btn s2-btn-green py-3 px-4 disabled:opacity-50"
       >
-        {{ isSaving ? 'Sparar...' : 'Spara relation' }}
+        {{ isSaving ? 'Saving...' : 'Save relationship' }}
       </button>
     </div>
   </form>
@@ -85,15 +85,15 @@ const form = reactive({
 })
 
 const relationshipTypes = [
-  { value: 'parent', label: 'Förälder', icon: '👨‍👩‍👧', bgActive: 'bg-green-100', textActive: 'text-green-700', ring: 'ring-green-400' },
-  { value: 'child', label: 'Barn', icon: '👶', bgActive: 'bg-green-100', textActive: 'text-green-700', ring: 'ring-green-400' },
-  { value: 'sibling', label: 'Syskon', icon: '👫', bgActive: 'bg-green-100', textActive: 'text-green-700', ring: 'ring-green-400' },
-  { value: 'spouse', label: 'Partner', icon: '💕', bgActive: 'bg-pink-100', textActive: 'text-pink-700', ring: 'ring-pink-400' },
-  { value: 'ex', label: 'Ex', icon: '💔', bgActive: 'bg-pink-100', textActive: 'text-pink-400', ring: 'ring-pink-300' },
-  { value: 'friend', label: 'Vän', icon: '🤝', bgActive: 'bg-blue-100', textActive: 'text-blue-700', ring: 'ring-blue-400' },
-  { value: 'enemy', label: 'Fiende', icon: '😠', bgActive: 'bg-red-100', textActive: 'text-red-700', ring: 'ring-red-400' },
-  { value: 'roommate', label: 'Roomie', icon: '🏠', bgActive: 'bg-yellow-100', textActive: 'text-yellow-700', ring: 'ring-yellow-400' },
-  { value: 'mentor', label: 'Mentor', icon: '🎓', bgActive: 'bg-purple-100', textActive: 'text-purple-700', ring: 'ring-purple-400' }
+  { value: 'parent', label: 'Parent', icon: '👨‍👩‍👧', bgActive: 'bg-green-500/20', textActive: 'text-green-300', ring: 'ring-green-500/50' },
+  { value: 'child', label: 'Child', icon: '👶', bgActive: 'bg-green-500/20', textActive: 'text-green-300', ring: 'ring-green-500/50' },
+  { value: 'sibling', label: 'Sibling', icon: '👫', bgActive: 'bg-green-500/20', textActive: 'text-green-300', ring: 'ring-green-500/50' },
+  { value: 'spouse', label: 'Spouse', icon: '💕', bgActive: 'bg-pink-500/20', textActive: 'text-pink-300', ring: 'ring-pink-500/50' },
+  { value: 'ex', label: 'Ex', icon: '💔', bgActive: 'bg-pink-500/20', textActive: 'text-pink-300', ring: 'ring-pink-500/40' },
+  { value: 'friend', label: 'Friend', icon: '🤝', bgActive: 'bg-blue-500/20', textActive: 'text-blue-300', ring: 'ring-blue-500/50' },
+  { value: 'enemy', label: 'Enemy', icon: '😠', bgActive: 'bg-red-500/20', textActive: 'text-red-300', ring: 'ring-red-500/50' },
+  { value: 'roommate', label: 'Roommate', icon: '🏠', bgActive: 'bg-yellow-500/20', textActive: 'text-yellow-300', ring: 'ring-yellow-500/50' },
+  { value: 'mentor', label: 'Mentor', icon: '🎓', bgActive: 'bg-purple-500/20', textActive: 'text-purple-300', ring: 'ring-purple-500/50' }
 ]
 
 // Group sims by world
@@ -116,7 +116,7 @@ const groupedSims = computed(() => {
   const simsWithoutHouse = simsStore.sims.filter(s => !s.houseId)
   if (simsWithoutHouse.length > 0) {
     groups.push({
-      name: 'Utan hus',
+      name: 'No house',
       sims: simsWithoutHouse
     })
   }
@@ -145,9 +145,3 @@ async function saveRelationship() {
   }
 }
 </script>
-
-<style scoped>
-.input-field {
-  @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all outline-none;
-}
-</style>

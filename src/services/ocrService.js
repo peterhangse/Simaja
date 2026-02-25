@@ -1,9 +1,8 @@
 /**
  * OCR Service using Tesseract.js
- * Extracts and parses Sim data from Sims 4 screenshots
+ * Tesseract is dynamically imported to avoid ~2MB in the main bundle.
  */
 
-import { createWorker } from 'tesseract.js'
 import { findBestMatch, findAllMatches, extractPotentialName, extractSkillLevel } from '@/utils/fuzzyMatch'
 import { 
   getAllTraitNames, 
@@ -32,6 +31,7 @@ export async function initWorker(onProgress = null) {
     return workerInstance
   }
   
+  const { createWorker } = await import('tesseract.js')
   workerInstance = await createWorker('eng+swe', 1, {
     logger: (m) => {
       if (onProgress && m.status === 'recognizing text') {

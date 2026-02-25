@@ -1,14 +1,19 @@
 <template>
   <form @submit.prevent="saveWorld" class="space-y-4">
+    <!-- Error message -->
+    <div v-if="errorMessage" class="bg-red-500/15 border border-red-500/30 rounded-xl p-3 text-sm text-red-300">
+      ⚠️ {{ errorMessage }}
+    </div>
+
     <!-- World name -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">
-        Världens namn *
+      <label class="block s2-label mb-1">
+        World name *
       </label>
       <input
         v-model="form.name"
         type="text"
-        placeholder="T.ex. Willow Creek"
+        placeholder="e.g. Willow Creek"
         class="input-field"
         required
       />
@@ -16,12 +21,12 @@
 
     <!-- Description -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">
-        Beskrivning
+      <label class="block s2-label mb-1">
+        Description
       </label>
       <textarea
         v-model="form.description"
-        placeholder="Beskriv världen..."
+        placeholder="Describe the world..."
         rows="3"
         class="input-field resize-none"
       />
@@ -29,12 +34,12 @@
 
     <!-- Image upload -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">
-        Bild (valfritt)
+      <label class="block s2-label mb-1">
+        Image (optional)
       </label>
       <div class="flex items-center gap-4">
         <div 
-          class="w-24 h-24 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300"
+          class="w-24 h-24 rounded-xl bg-black/20 flex items-center justify-center overflow-hidden s2-upload-zone"
         >
           <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
           <span v-else class="text-3xl">🌍</span>
@@ -50,10 +55,13 @@
           <button
             type="button"
             @click="$refs.fileInput.click()"
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+            class="s2-btn s2-btn-ghost px-4 py-2 text-sm"
           >
-            Välj bild
+            Choose image
           </button>
+          <p v-if="imageFile && imageFile.size > 5 * 1024 * 1024" class="text-xs text-red-500 mt-1">
+            Image must be under 5 MB
+          </p>
         </div>
       </div>
     </div>
@@ -63,16 +71,16 @@
       <button
         type="button"
         @click="$emit('cancel')"
-        class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+        class="flex-1 s2-btn s2-btn-ghost py-3 px-4"
       >
-        Avbryt
+        Cancel
       </button>
       <button
         type="submit"
-        :disabled="isSaving || !form.name.trim()"
-        class="flex-1 py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+        :disabled="isSaving || !form.name.trim() || (imageFile && imageFile.size > 5 * 1024 * 1024)"
+        class="flex-1 s2-btn s2-btn-green py-3 px-4 disabled:opacity-50"
       >
-        {{ isSaving ? 'Sparar...' : (editMode ? 'Uppdatera' : 'Skapa värld') }}
+        {{ isSaving ? 'Saving...' : (editMode ? 'Update' : 'Create world') }}
       </button>
     </div>
   </form>
@@ -97,6 +105,7 @@ const editMode = ref(false)
 const isSaving = ref(false)
 const imagePreview = ref(null)
 const imageFile = ref(null)
+const errorMessage = ref('')
 
 const form = reactive({
   name: '',
@@ -115,6 +124,11 @@ onMounted(() => {
 function handleImageChange(event) {
   const file = event.target.files[0]
   if (file) {
+    errorMessage.value = ''
+    if (file.size > 5 * 1024 * 1024) {
+      errorMessage.value = 'Image is too large. Maximum size is 5 MB.'
+      return
+    }
     imageFile.value = file
     imagePreview.value = URL.createObjectURL(file)
   }
@@ -124,12 +138,18 @@ async function saveWorld() {
   if (!form.name.trim()) return
 
   isSaving.value = true
+  errorMessage.value = ''
 
   try {
     let imageUrl = props.world?.imageUrl || null
 
     // Upload image if new one selected
     if (imageFile.value) {
+      if (imageFile.value.size > 5 * 1024 * 1024) {
+        errorMessage.value = 'Image is too large. Maximum size is 5 MB.'
+        isSaving.value = false
+        return
+      }
       const path = `worlds/${Date.now()}_${imageFile.value.name}`
       imageUrl = await simsStore.uploadImage(imageFile.value, path)
     }
@@ -149,14 +169,9 @@ async function saveWorld() {
     emit('saved')
   } catch (error) {
     console.error('Error saving world:', error)
+    errorMessage.value = 'Failed to save world. Please try again.'
   } finally {
     isSaving.value = false
   }
 }
 </script>
-
-<style scoped>
-.input-field {
-  @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none;
-}
-</style>

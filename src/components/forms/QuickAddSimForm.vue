@@ -1,15 +1,15 @@
 <template>
   <div class="space-y-4">
-    <p class="text-sm text-gray-500">Snabblägg en Sim med bara namn och hus. Du kan fylla i mer senare.</p>
+    <p class="text-sm text-[var(--s2-sky)]">Quickly add a Sim with just a name and house. You can fill in more later.</p>
     
     <!-- Name -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Namn *</label>
+      <label class="block s2-label mb-1">Name *</label>
       <input
         v-model="form.name"
         type="text"
-        placeholder="Simmarens namn"
-        class="w-full px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+        placeholder="Sim name"
+        class="s2-input"
         ref="nameInput"
         @keyup.enter="save"
       />
@@ -17,12 +17,12 @@
     
     <!-- House -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Hus *</label>
+      <label class="block s2-label mb-1">House *</label>
       <select
         v-model="form.houseId"
-        class="w-full px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all outline-none"
+        class="s2-input"
       >
-        <option value="">Välj hus...</option>
+        <option value="">Choose house...</option>
         <optgroup v-for="world in simsStore.worlds" :key="world.id" :label="world.name">
           <option 
             v-for="house in getWorldHouses(world.id)" 
@@ -33,28 +33,28 @@
           </option>
         </optgroup>
       </select>
-      <p v-if="simsStore.houses.length === 0" class="text-sm text-amber-600 mt-1">
-        Du behöver skapa ett hus först!
+      <p v-if="simsStore.houses.length === 0" class="text-sm text-amber-400 mt-1">
+        You need to create a house first!
       </p>
     </div>
     
     <!-- Error message -->
-    <p v-if="errorMsg" class="text-sm text-red-500">{{ errorMsg }}</p>
+    <p v-if="errorMsg" class="text-sm text-red-400">{{ errorMsg }}</p>
     
     <!-- Actions -->
     <div class="flex justify-end gap-3 pt-2">
       <button
         @click="$emit('cancel')"
-        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+        class="s2-btn s2-btn-ghost px-4 py-2"
       >
-        Avbryt
+        Cancel
       </button>
       <button
         @click="save"
         :disabled="saving"
-        class="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+        class="s2-btn s2-btn-green px-6 py-2 disabled:opacity-50"
       >
-        {{ saving ? 'Sparar...' : '⚡ Skapa' }}
+        {{ saving ? 'Saving...' : '⚡ Create' }}
       </button>
     </div>
   </div>
@@ -84,12 +84,12 @@ async function save() {
   errorMsg.value = ''
   
   if (!form.name.trim()) {
-    errorMsg.value = 'Du måste ange ett namn'
+    errorMsg.value = 'Please enter a name'
     return
   }
   
   if (!form.houseId) {
-    errorMsg.value = 'Du måste välja ett hus'
+    errorMsg.value = 'Please choose a house'
     return
   }
   
@@ -116,7 +116,7 @@ async function save() {
     emit('saved', newId)
   } catch (error) {
     console.error('Error saving sim:', error)
-    errorMsg.value = 'Något gick fel, försök igen'
+    errorMsg.value = 'Something went wrong, try again'
   } finally {
     saving.value = false
   }

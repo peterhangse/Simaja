@@ -49,6 +49,12 @@ const routes = [
     name: 'FamilyTree',
     component: () => import('@/views/FamilyTreeView.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/NotFoundView.vue'),
+    meta: { requiresAuth: false }
   }
 ]
 

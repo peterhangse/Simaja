@@ -98,52 +98,52 @@ export const TRAITS = [
 
 // Aspirations grouped by category
 export const ASPIRATIONS = {
-  'Kreativitet': [
+  'Creativity': [
     { en: 'Master Chef', sv: 'Mästerkock' },
     { en: 'Master Mixologist', sv: 'Mästerbartender' },
     { en: 'Musical Genius', sv: 'Musikaliskt geni' },
     { en: 'Painter Extraordinaire', sv: 'Extraordinär målare' },
     { en: 'Bestselling Author', sv: 'Bästsäljarförfattare' }
   ],
-  'Förmögenhet': [
+  'Fortune': [
     { en: 'Fabulously Wealthy', sv: 'Sagolikt rik' },
     { en: 'Mansion Baron', sv: 'Herrgårdsbaron' },
     { en: 'Freelance Botanist', sv: 'Frilansande botaniker' }
   ],
-  'Familj': [
+  'Family': [
     { en: 'Big Happy Family', sv: 'Stor lycklig familj' },
     { en: 'Successful Lineage', sv: 'Framgångsrik släkt' },
     { en: 'Super Parent', sv: 'Superförälder' }
   ],
-  'Kärlek': [
+  'Love': [
     { en: 'Serial Romantic', sv: 'Seriell romantiker' },
     { en: 'Soulmate', sv: 'Själsfrände' }
   ],
-  'Kunskap': [
+  'Knowledge': [
     { en: 'Computer Whiz', sv: 'Datorunderbarn' },
     { en: 'Nerd Brain', sv: 'Nördhjärna' },
     { en: 'Renaissance Sim', sv: 'Renässanssim' },
     { en: 'Academic', sv: 'Akademiker' },
     { en: 'Archaeology Scholar', sv: 'Arkeologiforskare' }
   ],
-  'Popularitet': [
+  'Popularity': [
     { en: 'Friend of the World', sv: 'Världens vän' },
     { en: 'Party Animal', sv: 'Festdjur' },
     { en: 'Joke Star', sv: 'Skämtstjärna' },
     { en: 'World-Famous Celebrity', sv: 'Världsberömd kändis' },
     { en: 'Leader of the Pack', sv: 'Ledare för flocken' }
   ],
-  'Atletisk': [
+  'Athletic': [
     { en: 'Bodybuilder', sv: 'Kroppsbyggare' },
     { en: 'Extreme Sports Enthusiast', sv: 'Extremsportentusiast' }
   ],
-  'Natur': [
+  'Nature': [
     { en: 'Angler Extraordinaire', sv: 'Extraordinär fiskare' },
     { en: 'Curator', sv: 'Kurator' },
     { en: 'Jungle Explorer', sv: 'Djungelutforskare' },
     { en: 'Beach Life', sv: 'Strandliv' }
   ],
-  'Mat & Dryck': [
+  'Food & Drink': [
     { en: 'Grilled Cheese', sv: 'Grillad ost' }
   ],
   'Deviancy': [
@@ -302,29 +302,29 @@ export function ageToSwedish(englishAge) {
 
 // Get all traits as simple array (for form select options)
 export function getTraitOptions() {
-  return TRAITS.map(t => t.sv).sort()
+  return TRAITS.map(t => t.en).sort()
 }
 
 // Get aspirations grouped by category (for form select options)
 export function getAspirationOptions() {
   const options = {}
   for (const [category, aspirations] of Object.entries(ASPIRATIONS)) {
-    options[category] = aspirations.map(a => a.sv)
+    options[category] = aspirations.map(a => a.en)
   }
   return options
 }
 
 // Get careers as simple array
 export function getCareerOptions() {
-  return CAREERS.map(c => c.sv).sort()
+  return CAREERS.map(c => c.en).sort()
 }
 
 // Get skills as simple array
 export function getSkillOptions() {
-  return SKILLS.map(s => s.sv).sort()
+  return SKILLS.map(s => s.en).sort()
 }
 
 // Get ages as simple array
 export function getAgeOptions() {
-  return AGES.map(a => a.sv)
+  return AGES.map(a => a.en)
 }

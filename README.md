@@ -1,137 +1,138 @@
 # Simaja 🎮
 
-> Din personliga app för att hålla koll på dina Sims, deras världar och relationer.
+> Your personal companion app for tracking your Sims, their worlds, and relationships.
 
 ![Simaja](https://img.shields.io/badge/Made%20for-Maja-green?style=for-the-badge)
 ![Vue 3](https://img.shields.io/badge/Vue-3-4FC08D?style=for-the-badge&logo=vuedotjs)
 ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 
-## ✨ Funktioner
+## ✨ Features
 
-- 🌍 **Världar** - Organisera dina Sims i olika världar (Willow Creek, Oasis Springs, etc.)
-- 🏠 **Hus** - Skapa hus och tomter i varje värld
-- 👤 **Simar** - Registrera alla dina Simar med:
-  - Namn, ålder, kön
-  - Personlighetsdrag och aspirations
-  - Utseende (hårfärg, ögonfärg, klädstil)
-  - Karriär och färdigheter
-  - Bilder
-- 💕 **Relationer** - Koppla ihop Simar med olika relationstyper:
-  - Familj (förälder, barn, syskon)
-  - Romantiska (partner, ex)
-  - Sociala (vän, fiende, roommate, mentor)
-- 🌳 **Släktträd** - Interaktiv visualisering av alla relationer med Cytoscape.js
-- 📖 **Dagbok** - Dokumentera viktiga händelser för varje Sim
-- 📸 **Export** - Exportera släktträdet som bild
+- 🌍 **Worlds** — Organize your Sims across different worlds (Willow Creek, Oasis Springs, etc.)
+- 🏠 **Houses** — Create houses and lots within each world
+- 👤 **Sims** — Register all your Sims with:
+  - Name, age, gender
+  - Personality traits and aspirations
+  - Appearance (hair color, eye color, clothing style)
+  - Career and skills
+  - Images
+- 💭 **Planned Sims** — Create concept Sims before they exist in-game (interests, backstory)
+- 💕 **Relationships** — Connect Sims with 9 relationship types:
+  - Family (parent, child, sibling)
+  - Romantic (spouse, ex)
+  - Social (friend, enemy, roommate, mentor)
+- 🌳 **Family Tree** — Interactive visualization of all relationships with Cytoscape.js
+- 📖 **Diary** — Document important life events for each Sim
+- 📸 **Screenshot OCR** — Import Sim data from in-game screenshots using Tesseract.js
+- 🎵 **Music Player** — Ambient Sims 2/4 soundtrack while planning
+- 💾 **Profiles** — Multiple save file profiles with isolated data
+- 📸 **Export** — Export the family tree as an image
 
-## 🚀 Kom igång
+## 🚀 Getting Started
 
-### Förutsättningar
+### Prerequisites
 
-- Node.js 18+ 
-- npm eller yarn
-- Firebase-projekt (gratis)
+- Node.js 18+
+- npm or yarn
+- Firebase project (free tier)
 
 ### Installation
 
-1. **Klona repot**
+1. **Clone the repo**
    ```bash
-   git clone https://github.com/din-användare/simaja.git
+   git clone https://github.com/your-user/simaja.git
    cd simaja
    ```
 
-2. **Installera beroenden**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Konfigurera miljövariabler**
+3. **Configure environment variables**
    ```bash
    cp .env.example .env
    ```
-   Redigera `.env` och fyll i dina Firebase-uppgifter och lösenord.
+   Edit `.env` and fill in your Firebase credentials and password.
 
-4. **Starta utvecklingsservern**
+4. **Start the dev server**
    ```bash
    npm run dev
    ```
 
-5. Öppna http://localhost:5173 i webbläsaren
+5. Open http://localhost:5173 in your browser
 
-### Firebase-setup
+### Firebase Setup
 
-1. Skapa ett nytt projekt på [Firebase Console](https://console.firebase.google.com/)
-2. Aktivera Firestore Database
-3. Aktivera Storage
-4. Kopiera konfigurationen till `.env`
-5. Deploya Firestore-regler:
+1. Create a new project at [Firebase Console](https://console.firebase.google.com/)
+2. Enable Firestore Database
+3. Enable Storage
+4. Copy the config values to `.env`
+5. Deploy Firestore rules:
    ```bash
    npx firebase deploy --only firestore:rules,storage:rules
    ```
 
 ## 📦 Deployment
 
-### Automatisk (GitHub Actions)
-
-1. Lägg till följande secrets i ditt GitHub-repo:
-   - `VITE_APP_PASSWORD` - Lösenordet för appen (t.ex. "maja")
-   - `VITE_FIREBASE_API_KEY`
-   - `VITE_FIREBASE_AUTH_DOMAIN`
-   - `VITE_FIREBASE_PROJECT_ID`
-   - `VITE_FIREBASE_STORAGE_BUCKET`
-   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
-   - `VITE_FIREBASE_APP_ID`
-   - `FIREBASE_SERVICE_ACCOUNT` - JSON-nyckel för Firebase-tjänstkonto
-
-2. Push till `main`-branchen för att trigga deployment
-
-### Manuell
+### Manual
 
 ```bash
 npm run build
-npx firebase deploy
+firebase deploy --only hosting:simaja
 ```
+
+The app is hosted at **https://simaja.web.app**
 
 ## 🎨 Tech Stack
 
-- **Frontend:** Vue 3 + Vite
+- **Frontend:** Vue 3 + Vite 5
 - **State Management:** Pinia
-- **Routing:** Vue Router
-- **Styling:** Tailwind CSS
-- **Visualisering:** Cytoscape.js
+- **Routing:** Vue Router 4 (lazy-loaded routes)
+- **Styling:** Tailwind CSS 3.4
+- **Visualization:** Cytoscape.js + dagre
+- **OCR:** Tesseract.js 5 (dynamically imported)
 - **Backend:** Firebase (Firestore + Storage)
 - **Hosting:** Firebase Hosting
+- **Linting:** ESLint 9 + Prettier
 
-## 📁 Projektstruktur
+## 📁 Project Structure
 
 ```
 simaja/
 ├── src/
-│   ├── components/       # Vue-komponenter
-│   │   ├── forms/        # Formulär för världar, simar, etc.
-│   │   └── icons/        # Ikoner (Plumbob)
-│   ├── views/            # Sidkomponenter
-│   ├── stores/           # Pinia stores
-│   ├── services/         # Firebase-tjänster
+│   ├── components/       # Vue components
+│   │   ├── forms/        # Forms for worlds, sims, etc.
+│   │   ├── icons/        # Icons (Plumbob)
+│   │   ├── MusicPlayer.vue
+│   │   └── ProfilePicker.vue
+│   ├── views/            # Page components
+│   ├── stores/           # Pinia stores (sims, auth)
+│   ├── services/         # Firebase + OCR services
+│   ├── data/             # Sims 4 game data (traits, aspirations, etc.)
 │   ├── router/           # Vue Router
 │   └── style.css         # Global CSS
-├── public/               # Statiska filer
-├── .env.example          # Mall för miljövariabler
-├── firebase.json         # Firebase-konfiguration
-├── firestore.rules       # Säkerhetsregler för Firestore
-└── storage.rules         # Säkerhetsregler för Storage
+├── docs/                 # PRD, Roadmap, Audit, Next Steps
+├── public/               # Static files
+├── .env.example          # Environment variable template
+├── eslint.config.js      # ESLint 9 flat config
+├── .prettierrc           # Prettier config
+├── firebase.json         # Firebase hosting config
+├── firestore.rules       # Firestore security rules
+└── storage.rules         # Storage security rules
 ```
 
-## 🔐 Säkerhet
+## 🔐 Security
 
-- Lösenordet lagras i miljövariabel, inte i koden
-- Session sparas i webbläsarens localStorage
-- Firestore-regler kan konfigureras för extra säkerhet
+- Password stored in environment variable, not in source code
+- Firestore rules enforce per-collection data validation on create
+- Session persisted in browser localStorage
+- **Note:** Firebase Auth (Google/email) planned for v3.0
 
-## 📝 Licens
+## 📝 License
 
 MIT © Maja
 
 ---
 
-*Gjord med 💚 för The Sims-entusiaster*
+*Made with 💚 for The Sims enthusiasts*

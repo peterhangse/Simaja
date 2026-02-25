@@ -8,7 +8,7 @@ import {
   addDoc, 
   updateDoc, 
   deleteDoc, 
-  onSnapshot,
+  writeBatch,
   query,
   orderBy
 } from 'firebase/firestore'
@@ -21,8 +21,17 @@ export const useSimsStore = defineStore('sims', () => {
   const sims = ref([])
   const relationships = ref([])
   const diaryEntries = ref([])
+  const profiles = ref([])
+  const activeProfileId = ref(localStorage.getItem('simaja_profile') || 'default')
   const isLoading = ref(false)
   const error = ref(null)
+
+  // Profile helper — matches documents to active profile
+  function matchesProfile(docProfileId) {
+    const pid = activeProfileId.value
+    if (pid === 'default') return !docProfileId || docProfileId === 'default'
+    return docProfileId === pid
+  }
 
   // Computed
   const getWorldById = computed(() => (id) => worlds.value.find(w => w.id === id))
@@ -53,13 +62,19 @@ export const useSimsStore = defineStore('sims', () => {
       .sort((a, b) => new Date(b.date) - new Date(a.date))
   )
 
+  // Planned / Active sims
+  const activeSims = computed(() => sims.value.filter(s => s.status !== 'planned'))
+  const plannedSims = computed(() => sims.value.filter(s => s.status === 'planned'))
+
   // Actions - Worlds
   async function fetchWorlds() {
     isLoading.value = true
     try {
-      const q = query(collection(db, 'worlds'), orderBy('order', 'asc'))
-      const snapshot = await getDocs(q)
-      worlds.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      const snapshot = await getDocs(collection(db, 'worlds'))
+      worlds.value = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(w => matchesProfile(w.profileId))
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
     } catch (err) {
       error.value = err.message
       console.error('Error fetching worlds:', err)
@@ -72,6 +87,7 @@ export const useSimsStore = defineStore('sims', () => {
     try {
       const docRef = await addDoc(collection(db, 'worlds'), {
         ...worldData,
+        profileId: activeProfileId.value,
         order: worlds.value.length,
         createdAt: new Date().toISOString()
       })
@@ -99,7 +115,42 @@ export const useSimsStore = defineStore('sims', () => {
 
   async function deleteWorld(id) {
     try {
-      await deleteDoc(doc(db, 'worlds', id))
+      const batch = writeBatch(db)
+      
+      // Find all houses in this world
+      const worldHouses = houses.value.filter(h => h.worldId === id)
+      const worldHouseIds = worldHouses.map(h => h.id)
+      
+      // Find all sims in those houses
+      const worldSims = sims.value.filter(s => worldHouseIds.includes(s.houseId))
+      const worldSimIds = worldSims.map(s => s.id)
+      
+      // Delete relationships involving these sims
+      const affectedRels = relationships.value.filter(r => 
+        worldSimIds.includes(r.sim1Id) || worldSimIds.includes(r.sim2Id)
+      )
+      affectedRels.forEach(r => batch.delete(doc(db, 'relationships', r.id)))
+      
+      // Delete diary entries for these sims
+      const affectedDiary = diaryEntries.value.filter(d => worldSimIds.includes(d.simId))
+      affectedDiary.forEach(d => batch.delete(doc(db, 'diary', d.id)))
+      
+      // Delete the sims
+      worldSims.forEach(s => batch.delete(doc(db, 'sims', s.id)))
+      
+      // Delete the houses
+      worldHouses.forEach(h => batch.delete(doc(db, 'houses', h.id)))
+      
+      // Delete the world
+      batch.delete(doc(db, 'worlds', id))
+      
+      await batch.commit()
+      
+      // Update local state
+      relationships.value = relationships.value.filter(r => !affectedRels.find(ar => ar.id === r.id))
+      diaryEntries.value = diaryEntries.value.filter(d => !affectedDiary.find(ad => ad.id === d.id))
+      sims.value = sims.value.filter(s => !worldSimIds.includes(s.id))
+      houses.value = houses.value.filter(h => !worldHouseIds.includes(h.id))
       worlds.value = worlds.value.filter(w => w.id !== id)
     } catch (err) {
       error.value = err.message
@@ -112,7 +163,9 @@ export const useSimsStore = defineStore('sims', () => {
     isLoading.value = true
     try {
       const snapshot = await getDocs(collection(db, 'houses'))
-      houses.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      houses.value = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(h => matchesProfile(h.profileId))
     } catch (err) {
       error.value = err.message
     } finally {
@@ -124,6 +177,7 @@ export const useSimsStore = defineStore('sims', () => {
     try {
       const docRef = await addDoc(collection(db, 'houses'), {
         ...houseData,
+        profileId: activeProfileId.value,
         createdAt: new Date().toISOString()
       })
       const newHouse = { id: docRef.id, ...houseData }
@@ -150,7 +204,34 @@ export const useSimsStore = defineStore('sims', () => {
 
   async function deleteHouse(id) {
     try {
-      await deleteDoc(doc(db, 'houses', id))
+      const batch = writeBatch(db)
+      
+      // Find sims in this house
+      const houseSims = sims.value.filter(s => s.houseId === id)
+      const houseSimIds = houseSims.map(s => s.id)
+      
+      // Delete relationships involving these sims
+      const affectedRels = relationships.value.filter(r => 
+        houseSimIds.includes(r.sim1Id) || houseSimIds.includes(r.sim2Id)
+      )
+      affectedRels.forEach(r => batch.delete(doc(db, 'relationships', r.id)))
+      
+      // Delete diary entries for these sims
+      const affectedDiary = diaryEntries.value.filter(d => houseSimIds.includes(d.simId))
+      affectedDiary.forEach(d => batch.delete(doc(db, 'diary', d.id)))
+      
+      // Delete the sims
+      houseSims.forEach(s => batch.delete(doc(db, 'sims', s.id)))
+      
+      // Delete the house
+      batch.delete(doc(db, 'houses', id))
+      
+      await batch.commit()
+      
+      // Update local state
+      relationships.value = relationships.value.filter(r => !affectedRels.find(ar => ar.id === r.id))
+      diaryEntries.value = diaryEntries.value.filter(d => !affectedDiary.find(ad => ad.id === d.id))
+      sims.value = sims.value.filter(s => !houseSimIds.includes(s.id))
       houses.value = houses.value.filter(h => h.id !== id)
     } catch (err) {
       error.value = err.message
@@ -163,7 +244,9 @@ export const useSimsStore = defineStore('sims', () => {
     isLoading.value = true
     try {
       const snapshot = await getDocs(collection(db, 'sims'))
-      sims.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      sims.value = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(s => matchesProfile(s.profileId))
     } catch (err) {
       error.value = err.message
     } finally {
@@ -175,6 +258,7 @@ export const useSimsStore = defineStore('sims', () => {
     try {
       const docRef = await addDoc(collection(db, 'sims'), {
         ...simData,
+        profileId: activeProfileId.value,
         createdAt: new Date().toISOString()
       })
       const newSim = { id: docRef.id, ...simData }
@@ -201,9 +285,23 @@ export const useSimsStore = defineStore('sims', () => {
 
   async function deleteSim(id) {
     try {
-      await deleteDoc(doc(db, 'sims', id))
+      const batch = writeBatch(db)
+      
+      // Delete relationships involving this sim from Firestore
+      const affectedRels = relationships.value.filter(r => r.sim1Id === id || r.sim2Id === id)
+      affectedRels.forEach(r => batch.delete(doc(db, 'relationships', r.id)))
+      
+      // Delete diary entries for this sim from Firestore
+      const affectedDiary = diaryEntries.value.filter(d => d.simId === id)
+      affectedDiary.forEach(d => batch.delete(doc(db, 'diary', d.id)))
+      
+      // Delete the sim
+      batch.delete(doc(db, 'sims', id))
+      
+      await batch.commit()
+      
+      // Update local state
       sims.value = sims.value.filter(s => s.id !== id)
-      // Also delete related relationships and diary entries
       relationships.value = relationships.value.filter(r => r.sim1Id !== id && r.sim2Id !== id)
       diaryEntries.value = diaryEntries.value.filter(d => d.simId !== id)
     } catch (err) {
@@ -216,7 +314,9 @@ export const useSimsStore = defineStore('sims', () => {
   async function fetchRelationships() {
     try {
       const snapshot = await getDocs(collection(db, 'relationships'))
-      relationships.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      relationships.value = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(r => matchesProfile(r.profileId))
     } catch (err) {
       error.value = err.message
     }
@@ -226,6 +326,7 @@ export const useSimsStore = defineStore('sims', () => {
     try {
       const docRef = await addDoc(collection(db, 'relationships'), {
         ...relationData,
+        profileId: activeProfileId.value,
         createdAt: new Date().toISOString()
       })
       const newRelation = { id: docRef.id, ...relationData }
@@ -251,7 +352,9 @@ export const useSimsStore = defineStore('sims', () => {
   async function fetchDiaryEntries() {
     try {
       const snapshot = await getDocs(collection(db, 'diary'))
-      diaryEntries.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      diaryEntries.value = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(d => matchesProfile(d.profileId))
     } catch (err) {
       error.value = err.message
     }
@@ -261,6 +364,7 @@ export const useSimsStore = defineStore('sims', () => {
     try {
       const docRef = await addDoc(collection(db, 'diary'), {
         ...entryData,
+        profileId: activeProfileId.value,
         createdAt: new Date().toISOString()
       })
       const newEntry = { id: docRef.id, ...entryData }
@@ -299,6 +403,7 @@ export const useSimsStore = defineStore('sims', () => {
   async function initializeData() {
     isLoading.value = true
     try {
+      await fetchProfiles()
       await Promise.all([
         fetchWorlds(),
         fetchHouses(),
@@ -313,6 +418,63 @@ export const useSimsStore = defineStore('sims', () => {
     }
   }
 
+  // Profiles
+  async function fetchProfiles() {
+    try {
+      const snapshot = await getDocs(collection(db, 'profiles'))
+      profiles.value = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+      // Ensure we always have a default profile entry
+      if (!profiles.value.find(p => p.id === 'default')) {
+        profiles.value.unshift({ id: 'default', name: 'Default Save', createdAt: new Date().toISOString() })
+      }
+    } catch (err) {
+      error.value = err.message
+    }
+  }
+
+  async function addProfile(name) {
+    try {
+      const docRef = await addDoc(collection(db, 'profiles'), {
+        name,
+        createdAt: new Date().toISOString()
+      })
+      const newProfile = { id: docRef.id, name }
+      profiles.value.push(newProfile)
+      return newProfile
+    } catch (err) {
+      error.value = err.message
+      throw err
+    }
+  }
+
+  async function deleteProfile(profileId) {
+    if (profileId === 'default') return
+    try {
+      await deleteDoc(doc(db, 'profiles', profileId))
+      profiles.value = profiles.value.filter(p => p.id !== profileId)
+      // If we deleted the active profile, switch to default
+      if (activeProfileId.value === profileId) {
+        await switchProfile('default')
+      }
+    } catch (err) {
+      error.value = err.message
+      throw err
+    }
+  }
+
+  async function switchProfile(profileId) {
+    activeProfileId.value = profileId
+    localStorage.setItem('simaja_profile', profileId)
+    // Refetch all data filtered to new profile
+    await Promise.all([
+      fetchWorlds(),
+      fetchHouses(),
+      fetchSims(),
+      fetchRelationships(),
+      fetchDiaryEntries()
+    ])
+  }
+
   return {
     // State
     worlds,
@@ -320,6 +482,8 @@ export const useSimsStore = defineStore('sims', () => {
     sims,
     relationships,
     diaryEntries,
+    profiles,
+    activeProfileId,
     isLoading,
     error,
     
@@ -332,6 +496,8 @@ export const useSimsStore = defineStore('sims', () => {
     getSimsByWorld,
     getRelationshipsForSim,
     getDiaryForSim,
+    activeSims,
+    plannedSims,
     
     // Actions
     fetchWorlds,
@@ -353,6 +519,10 @@ export const useSimsStore = defineStore('sims', () => {
     addDiaryEntry,
     deleteDiaryEntry,
     uploadImage,
-    initializeData
+    initializeData,
+    fetchProfiles,
+    addProfile,
+    deleteProfile,
+    switchProfile
   }
 })

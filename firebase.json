@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "simaja",
     "public": "dist",
     "ignore": [
       "firebase.json",

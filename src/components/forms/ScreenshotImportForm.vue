@@ -3,13 +3,13 @@
     <!-- Step 1: Upload -->
     <div v-if="step === 'upload'" class="space-y-4">
       <!-- Instructions -->
-      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
-        <h4 class="font-semibold text-blue-800 mb-2">📸 Så här gör du:</h4>
-        <ol class="text-sm text-blue-700 space-y-1 list-decimal list-inside">
-          <li>Öppna Sims 4 och klicka på din Sim</li>
-          <li>Öppna Simology-panelen (visar traits, skills etc)</li>
-          <li>Tryck <kbd class="px-1.5 py-0.5 bg-blue-200 rounded text-xs">C</kbd> för att ta screenshot</li>
-          <li>Ladda upp bilden här nedan</li>
+      <div class="bg-blue-500/10 border border-blue-500/25 rounded-xl p-4">
+        <h4 class="font-semibold text-[var(--s2-sky)] mb-2">📸 How to do it:</h4>
+        <ol class="text-sm text-blue-300 space-y-1 list-decimal list-inside">
+          <li>Open Sims 4 and click on your Sim</li>
+          <li>Open the Simology panel (shows traits, skills etc)</li>
+          <li>Press <kbd class="px-1.5 py-0.5 bg-blue-500/30 rounded text-xs">C</kbd> to take a screenshot</li>
+          <li>Upload the image below</li>
         </ol>
       </div>
 
@@ -21,14 +21,14 @@
         @click="$refs.fileInput.click()"
         class="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all"
         :class="isDragging 
-          ? 'border-green-500 bg-green-50' 
-          : 'border-gray-300 hover:border-green-400 hover:bg-gray-50'"
+          ? 'border-green-500/60 bg-green-500/10' 
+          : 'border-[var(--s2-border)] hover:border-[var(--s2-border-strong)] hover:bg-white/5'"
       >
         <div class="text-5xl mb-4">{{ isDragging ? '📥' : '🖼️' }}</div>
-        <p class="text-gray-700 font-medium mb-2">
-          {{ isDragging ? 'Släpp bilden här!' : 'Dra och släpp en screenshot här' }}
+        <p class="text-[var(--s2-cream)] font-medium mb-2">
+          {{ isDragging ? 'Drop the image here!' : 'Drag and drop a screenshot here' }}
         </p>
-        <p class="text-gray-500 text-sm">eller klicka för att välja fil</p>
+        <p class="text-[var(--s2-sky)] text-sm">or click to choose a file</p>
         <input
           type="file"
           accept="image/*"
@@ -43,7 +43,7 @@
         <img 
           :src="previewUrl" 
           alt="Preview" 
-          class="w-full rounded-xl shadow-sm max-h-64 object-contain bg-gray-100"
+          class="w-full rounded-xl shadow-sm max-h-64 object-contain bg-black/20"
         />
         <button
           @click="clearFile"
@@ -57,15 +57,15 @@
       <div v-if="selectedFile && !isProcessing" class="flex gap-3">
         <button
           @click="$emit('cancel')"
-          class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+          class="flex-1 s2-btn s2-btn-ghost py-3 px-4"
         >
-          Avbryt
+          Cancel
         </button>
         <button
           @click="processImage"
-          class="flex-1 py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+          class="flex-1 s2-btn s2-btn-green py-3 px-4"
         >
-          🔍 Analysera
+          🔍 Analyze
         </button>
       </div>
     </div>
@@ -74,18 +74,18 @@
     <div v-if="step === 'processing'" class="space-y-6 py-8">
       <div class="text-center">
         <div class="text-6xl mb-4 animate-pulse">🔍</div>
-        <h3 class="text-xl font-bold text-gray-800 mb-2">Analyserar screenshot...</h3>
-        <p class="text-gray-500 mb-4">Detta kan ta några sekunder</p>
+        <h3 class="text-xl font-bold text-[var(--s2-gold)] mb-2">Analyzing screenshot...</h3>
+        <p class="text-[var(--s2-sky)] mb-4">This may take a few seconds</p>
         
         <!-- Progress bar -->
         <div class="max-w-xs mx-auto">
-          <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div class="h-2 bg-white/10 rounded-full overflow-hidden">
             <div 
               class="h-full bg-gradient-to-r from-green-500 to-emerald-600 transition-all duration-300"
               :style="{ width: `${progress}%` }"
             />
           </div>
-          <p class="text-sm text-gray-500 mt-2">{{ progress }}%</p>
+          <p class="text-sm text-[var(--s2-sky)] mt-2">{{ progress }}%</p>
         </div>
       </div>
 
@@ -94,44 +94,44 @@
         v-if="previewUrl"
         :src="previewUrl" 
         alt="Preview" 
-        class="w-full rounded-xl shadow-sm max-h-40 object-contain bg-gray-100 opacity-50"
+        class="w-full rounded-xl shadow-sm max-h-40 object-contain bg-black/20 opacity-50"
       />
     </div>
 
     <!-- Step 3: Results -->
     <div v-if="step === 'results'" class="space-y-4">
       <!-- Error state -->
-      <div v-if="error" class="bg-red-50 border border-red-200 rounded-xl p-4">
-        <h4 class="font-semibold text-red-800 flex items-center gap-2">
-          <span>⚠️</span> Kunde inte analysera bilden
+      <div v-if="error" class="bg-red-500/10 border border-red-500/25 rounded-xl p-4">
+        <h4 class="font-semibold text-red-300 flex items-center gap-2">
+          <span>⚠️</span> Could not analyze the image
         </h4>
-        <p class="text-sm text-red-700 mt-1">{{ error }}</p>
+        <p class="text-sm text-red-300 mt-1">{{ error }}</p>
         <button
           @click="resetToUpload"
-          class="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm"
+          class="mt-3 s2-btn s2-btn-danger px-4 py-2 text-sm"
         >
-          Prova igen
+          Try again
         </button>
       </div>
 
       <!-- Success state -->
       <div v-else class="space-y-4">
         <!-- Preview thumbnail -->
-        <div class="flex items-center gap-4 bg-gray-50 rounded-xl p-3">
+        <div class="flex items-center gap-4 s2-panel-inner rounded-xl p-3">
           <img 
             :src="previewUrl" 
             alt="Preview" 
-            class="w-16 h-16 rounded-lg object-cover bg-gray-200"
+            class="w-16 h-16 rounded-lg object-cover bg-black/20"
           />
           <div class="flex-1">
-            <p class="font-medium text-gray-800">Hittade Sim-data</p>
-            <p class="text-sm text-gray-500">Kontrollera och korrigera nedan</p>
+            <p class="font-medium text-[var(--s2-cream)]">Found Sim data</p>
+            <p class="text-sm text-[var(--s2-sky)]">Review and correct below</p>
           </div>
           <button
             @click="resetToUpload"
-            class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+            class="px-3 py-1 text-sm text-[var(--s2-sky)] hover:text-white"
           >
-            Ny bild
+            New image
           </button>
         </div>
 
@@ -140,13 +140,13 @@
           <!-- Name -->
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-sm font-medium text-gray-700">Namn *</label>
+              <label class="block s2-label">Name *</label>
               <ConfidenceBadge :confidence="parsedData.name.confidence" />
             </div>
             <input
               v-model="formData.name"
               type="text"
-              placeholder="Simens namn"
+              placeholder="Sim's name"
               class="input-field"
               required
             />
@@ -155,11 +155,11 @@
           <!-- Age -->
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-sm font-medium text-gray-700">Ålder</label>
+              <label class="block s2-label">Age</label>
               <ConfidenceBadge :confidence="parsedData.age.confidence" />
             </div>
             <select v-model="formData.age" class="input-field">
-              <option value="">Välj ålder...</option>
+              <option value="">Choose age...</option>
               <option v-for="age in ageOptions" :key="age" :value="age">{{ age }}</option>
             </select>
           </div>
@@ -167,11 +167,11 @@
           <!-- Traits -->
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-sm font-medium text-gray-700">
-                Personlighetsdrag ({{ formData.traits.length }}/3)
+              <label class="block s2-label">
+                Personality traits ({{ formData.traits.length }}/3)
               </label>
-              <span v-if="parsedData.traits.length > 0" class="text-xs text-gray-500">
-                Hittade {{ parsedData.traits.length }} st
+              <span v-if="parsedData.traits.length > 0" class="text-xs text-[var(--s2-sky)]">
+                Found {{ parsedData.traits.length }}
               </span>
             </div>
             <div class="flex flex-wrap gap-2">
@@ -182,8 +182,8 @@
                 @click="toggleTrait(trait)"
                 class="px-3 py-1 rounded-full text-sm transition-all"
                 :class="formData.traits.includes(trait) 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                  ? 'bg-green-500/30 text-green-300 ring-1 ring-green-500/50' 
+                  : 'bg-white/10 text-[var(--s2-cream)] hover:bg-white/20'"
                 :disabled="formData.traits.length >= 3 && !formData.traits.includes(trait)"
               >
                 {{ trait }}
@@ -194,11 +194,11 @@
           <!-- Aspiration -->
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-sm font-medium text-gray-700">Aspiration</label>
+              <label class="block s2-label">Aspiration</label>
               <ConfidenceBadge :confidence="parsedData.aspiration.confidence" />
             </div>
             <select v-model="formData.aspiration" class="input-field">
-              <option value="">Välj aspiration...</option>
+              <option value="">Choose aspiration...</option>
               <optgroup v-for="(asps, category) in aspirationOptions" :key="category" :label="category">
                 <option v-for="asp in asps" :key="asp" :value="asp">{{ asp }}</option>
               </optgroup>
@@ -208,11 +208,11 @@
           <!-- Career -->
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-sm font-medium text-gray-700">Karriär</label>
+              <label class="block s2-label">Career</label>
               <ConfidenceBadge :confidence="parsedData.career.confidence" />
             </div>
             <select v-model="formData.career" class="input-field">
-              <option value="">Välj karriär...</option>
+              <option value="">Choose career...</option>
               <option v-for="career in careerOptions" :key="career" :value="career">
                 {{ career }}
               </option>
@@ -221,11 +221,11 @@
 
           <!-- House selection (required, not from OCR) -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Hus * 
-              <span class="text-gray-400 font-normal">(välj manuellt)</span>
+            <label class="block s2-label mb-1">House * 
+              <span class="text-[var(--s2-sky)] font-normal">(choose manually)</span>
             </label>
             <select v-model="formData.houseId" class="input-field" required>
-              <option value="">Välj hus...</option>
+              <option value="">Choose house...</option>
               <optgroup v-for="world in simsStore.worlds" :key="world.id" :label="world.name">
                 <option 
                   v-for="house in simsStore.getHousesByWorld(world.id)" 
@@ -236,44 +236,44 @@
                 </option>
               </optgroup>
             </select>
-            <p v-if="simsStore.houses.length === 0" class="text-sm text-amber-600 mt-1">
-              ⚠️ Du måste skapa ett hus först
+            <p v-if="simsStore.houses.length === 0" class="text-sm text-amber-400 mt-1">
+              ⚠️ You must create a house first
             </p>
           </div>
 
           <!-- Skills preview (if found) -->
           <div v-if="parsedData.skills.length > 0">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Hittade skills
-              <span class="text-gray-400 font-normal">(sparas ej automatiskt)</span>
+            <label class="block s2-label mb-2">
+              Found skills
+              <span class="text-[var(--s2-sky)] font-normal">(not saved automatically)</span>
             </label>
-            <div class="bg-gray-50 rounded-lg p-3 space-y-1">
+            <div class="s2-panel-inner rounded-lg p-3 space-y-1">
               <div 
                 v-for="skill in parsedData.skills" 
                 :key="skill.name"
                 class="flex items-center justify-between text-sm"
               >
-                <span class="text-gray-700">{{ skill.name }}</span>
-                <span class="font-medium text-gray-900">Nivå {{ skill.level }}</span>
+                <span class="text-[var(--s2-cream)]">{{ skill.name }}</span>
+                <span class="font-medium text-white">Level {{ skill.level }}</span>
               </div>
             </div>
           </div>
 
           <!-- Actions -->
-          <div class="flex gap-3 pt-4 border-t border-gray-100">
+          <div class="flex gap-3 pt-4 border-t border-white/10">
             <button
               type="button"
               @click="$emit('cancel')"
-              class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+              class="flex-1 s2-btn s2-btn-ghost py-3 px-4"
             >
-              Avbryt
+              Cancel
             </button>
             <button
               type="submit"
               :disabled="isSaving || !formData.name.trim() || !formData.houseId"
-              class="flex-1 py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+              class="flex-1 s2-btn s2-btn-green py-3 px-4 disabled:opacity-50"
             >
-              {{ isSaving ? 'Sparar...' : 'Skapa Sim' }}
+              {{ isSaving ? 'Saving...' : 'Create Sim' }}
             </button>
           </div>
         </form>
@@ -297,14 +297,14 @@ const ConfidenceBadge = {
       class="text-xs px-2 py-0.5 rounded-full"
       :class="confidenceClass"
     >
-      {{ confidence }}% säker
+      {{ confidence }}% confident
     </span>
   `,
   computed: {
     confidenceClass() {
-      if (this.confidence >= 90) return 'bg-green-100 text-green-700'
-      if (this.confidence >= 70) return 'bg-yellow-100 text-yellow-700'
-      return 'bg-red-100 text-red-700'
+      if (this.confidence >= 90) return 'bg-green-500/20 text-green-300'
+      if (this.confidence >= 70) return 'bg-yellow-500/20 text-yellow-300'
+      return 'bg-red-500/20 text-red-300'
     }
   }
 }
@@ -433,7 +433,7 @@ async function processImage() {
     step.value = 'results'
   } catch (err) {
     console.error('OCR processing error:', err)
-    error.value = 'Ett fel uppstod vid analys av bilden. Prova igen.'
+    error.value = 'An error occurred while analyzing the image. Try again.'
     step.value = 'results'
   } finally {
     isProcessing.value = false
@@ -469,7 +469,7 @@ async function createSim() {
       style: '',
       career: formData.career,
       skills: [],
-      notes: `Importerad från screenshot.\n\nHittade skills:\n${parsedData.skills.map(s => `- ${s.name}: Nivå ${s.level}`).join('\n') || 'Inga'}`,
+      notes: `Imported from screenshot.\n\nFound skills:\n${parsedData.skills.map(s => `- ${s.name}: Level ${s.level}`).join('\n') || 'None'}`,
       imageUrl: null
     }
 
@@ -477,7 +477,7 @@ async function createSim() {
     emit('imported', simData)
   } catch (err) {
     console.error('Error creating sim:', err)
-    error.value = 'Kunde inte spara Sim. Prova igen.'
+    error.value = 'Could not save Sim. Try again.'
   } finally {
     isSaving.value = false
   }
@@ -485,10 +485,6 @@ async function createSim() {
 </script>
 
 <style scoped>
-.input-field {
-  @apply w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all;
-}
-
 kbd {
   font-family: monospace;
 }

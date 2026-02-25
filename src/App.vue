@@ -1,23 +1,19 @@
 <template>
-  <div id="app" class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+  <div id="app" class="min-h-screen sims-bg">
     <router-view />
+    <MusicPlayer v-if="authStore.isAuthenticated" />
   </div>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
+import MusicPlayer from '@/components/MusicPlayer.vue'
 
 const authStore = useAuthStore()
-const router = useRouter()
 
-onMounted(async () => {
-  // Check if user has a valid session
-  const isAuthenticated = authStore.checkSession()
-  
-  if (!isAuthenticated) {
-    router.push('/login')
-  }
+onMounted(() => {
+  // Restore session from localStorage (router guard handles redirects)
+  authStore.checkSession()
 })
 </script>

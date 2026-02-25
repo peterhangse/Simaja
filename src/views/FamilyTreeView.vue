@@ -1,93 +1,93 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+  <div class="min-h-screen">
     <AppHeader />
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
+    <main class="max-w-7xl mx-auto px-4 py-8 relative z-[1]">
       <!-- Page header -->
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h2 class="text-3xl font-bold text-gray-800">🌳 Släktträd</h2>
-          <p class="text-gray-500 mt-1">Visualisera relationer mellan dina Simar</p>
+          <h2 class="text-3xl font-bold text-sims2-gold font-display"><GitBranch :size="28" class="inline text-green-400" /> Family Tree</h2>
+          <p class="text-sims2-sky mt-1">Visualize relationships between your Sims</p>
         </div>
         <div class="flex gap-2">
           <button
             @click="resetZoom"
-            class="px-4 py-2 bg-white text-gray-700 rounded-xl shadow-sm hover:shadow transition-all"
+            class="s2-btn px-4 py-2 text-sm"
           >
-            🔍 Återställ zoom
+            <ZoomIn :size="16" class="inline" /> Reset zoom
           </button>
           <button
             @click="exportImage"
-            class="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl shadow-sm hover:shadow-lg transition-all"
+            class="s2-btn s2-btn-green px-4 py-2 text-sm flex items-center gap-1"
           >
-            📸 Exportera bild
+            <Camera :size="16" /> Export image
           </button>
         </div>
       </div>
 
       <!-- Filters -->
-      <div class="bg-white rounded-xl p-4 shadow-sm mb-4 flex flex-wrap gap-4 items-center">
+      <div class="s2-panel p-4 mb-4 flex flex-wrap gap-4 items-center">
         <!-- Search -->
         <div class="flex items-center gap-2">
-          <span class="text-gray-500">🔎</span>
+          <Search :size="16" class="text-sims2-sky" />
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Sök Sim..."
-            class="px-3 py-2 rounded-lg border border-gray-200 w-40 focus:border-purple-500 outline-none"
+            placeholder="Search Sim..."
+            class="px-3 py-2 rounded-lg bg-black/30 border-2 border-sims2-sky/20 text-sims2-cream placeholder-sims2-sky/50 w-40 focus:border-sims2-sky/50 outline-none"
             @keyup.enter="searchAndCenter"
           />
           <button
             v-if="searchQuery"
             @click="searchAndCenter"
-            class="px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm"
+            class="s2-btn px-3 py-2 text-sm"
           >
-            Hitta
+            Find
           </button>
         </div>
         
         <div class="flex items-center gap-2">
-          <span class="text-gray-500">🌍</span>
-          <select v-model="filterWorld" class="px-3 py-2 rounded-lg border border-gray-200">
-            <option value="">Alla världar</option>
+          <Globe :size="16" class="text-sims2-sky" />
+          <select v-model="filterWorld" class="s2-select">
+            <option value="">All worlds</option>
             <option v-for="world in simsStore.worlds" :key="world.id" :value="world.id">
               {{ world.name }}
             </option>
           </select>
         </div>
         <div class="flex items-center gap-2">
-          <span class="text-gray-500">🔗</span>
-          <select v-model="filterRelationType" class="px-3 py-2 rounded-lg border border-gray-200">
-            <option value="">Alla relationer</option>
-            <option value="family">Familj (förälder/barn/syskon)</option>
-            <option value="romantic">Romantiska (partner/ex)</option>
-            <option value="social">Sociala (vän/fiende)</option>
+          <Link :size="16" class="text-sims2-sky" />
+          <select v-model="filterRelationType" class="s2-select">
+            <option value="">All relationships</option>
+            <option value="family">Family (parent/child/sibling)</option>
+            <option value="romantic">Romantic (spouse/ex)</option>
+            <option value="social">Social (friend/enemy)</option>
           </select>
         </div>
         
         <!-- Legend -->
-        <div class="flex-1 flex justify-end gap-4 text-sm">
+        <div class="flex-1 flex justify-end gap-4 text-sm text-sims2-cream">
           <span class="flex items-center gap-1">
-            <span class="w-4 h-1 bg-green-500 rounded"></span> Familj
+            <span class="w-4 h-1 bg-green-500 rounded"></span> Family
           </span>
           <span class="flex items-center gap-1">
-            <span class="w-4 h-1 bg-pink-500 rounded"></span> Romantisk
+            <span class="w-4 h-1 bg-pink-500 rounded"></span> Romantic
           </span>
           <span class="flex items-center gap-1">
-            <span class="w-4 h-1 bg-blue-500 rounded"></span> Vän
+            <span class="w-4 h-1 bg-blue-500 rounded"></span> Friend
           </span>
           <span class="flex items-center gap-1">
-            <span class="w-4 h-1 bg-red-500 rounded dashed"></span> Fiende
+            <span class="w-4 h-1 bg-red-500 rounded dashed"></span> Enemy
           </span>
         </div>
       </div>
 
       <!-- Cytoscape container -->
-      <div class="bg-white rounded-2xl shadow-sm overflow-hidden relative" style="height: calc(100vh - 320px)">
-        <div v-if="simsStore.sims.length === 0" class="h-full flex items-center justify-center text-gray-400">
+      <div class="s2-panel overflow-hidden relative" style="height: calc(100vh - 320px)">
+        <div v-if="simsStore.sims.length === 0" class="h-full flex items-center justify-center text-sims2-sky">
           <div class="text-center">
-            <span class="text-6xl">🌳</span>
-            <p class="mt-4">Lägg till Simar för att se släktträdet</p>
+            <GitBranch :size="48" class="mx-auto text-sims2-sky opacity-40" />
+            <p class="mt-4">Add Sims to see the family tree</p>
           </div>
         </div>
         <div v-else ref="cyContainer" class="w-full h-full"></div>
@@ -96,25 +96,22 @@
         <div
           v-if="hoverSim"
           ref="tooltipEl"
-          class="absolute bg-white rounded-xl shadow-lg p-3 pointer-events-none z-50 border border-gray-100"
+          class="absolute s2-panel-inner rounded-xl p-3 pointer-events-none z-50 border border-sims2-sky/30 shadow-lg"
           :style="{ left: tooltipPos.x + 'px', top: tooltipPos.y + 'px' }"
         >
           <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-purple-300 overflow-hidden flex-shrink-0">
-              <img v-if="hoverSim.imageUrl" :src="hoverSim.imageUrl" class="w-full h-full object-cover" />
-              <span v-else class="w-full h-full flex items-center justify-center text-xl">👤</span>
-            </div>
+            <SimAvatar :sim="hoverSim" size="sm" />
             <div>
-              <p class="font-bold text-gray-800">{{ hoverSim.name }}</p>
-              <p class="text-sm text-gray-500">{{ hoverSim.age || 'Okänd ålder' }} {{ getGenderIcon(hoverSim.gender) }}</p>
-              <p class="text-xs text-gray-400">{{ getHouseName(hoverSim.houseId) }}</p>
+              <p class="font-bold text-sims2-cream">{{ hoverSim.name }}</p>
+              <p class="text-sm text-sims2-sky">{{ hoverSim.age || 'Unknown age' }} {{ getGenderIcon(hoverSim.gender) }}</p>
+              <p class="text-xs text-sims2-sky/60">{{ getHouseName(hoverSim.houseId) }}</p>
             </div>
           </div>
           <div v-if="hoverSim.traits?.length" class="mt-2 flex flex-wrap gap-1">
             <span 
               v-for="trait in hoverSim.traits.slice(0, 3)" 
               :key="trait"
-              class="px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full text-xs"
+              class="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded-full text-xs"
             >
               {{ trait }}
             </span>
@@ -123,34 +120,31 @@
       </div>
       
       <!-- Hint -->
-      <p class="text-center text-gray-400 text-sm mt-2">
-        Hovra för info • Klicka för detaljer • Dra för att flytta
+      <p class="text-center text-sims2-sky/60 text-sm mt-2">
+        Hover for info • Click for details • Drag to move
       </p>
     </main>
 
     <!-- Sim detail popup -->
     <Modal v-model="showSimPopup" :title="selectedSim?.name || 'Sim'">
       <div v-if="selectedSim" class="text-center">
-        <div class="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-purple-200 to-purple-300 overflow-hidden mb-4">
-          <img v-if="selectedSim.imageUrl" :src="selectedSim.imageUrl" class="w-full h-full object-cover" />
-          <span v-else class="w-full h-full flex items-center justify-center text-4xl">👤</span>
-        </div>
-        <h3 class="text-xl font-bold text-gray-800">{{ selectedSim.name }}</h3>
-        <p class="text-gray-500">{{ selectedSim.age }}</p>
+        <SimAvatar :sim="selectedSim" size="lg" class="mx-auto mb-4" />
+        <h3 class="text-xl font-bold text-sims2-gold">{{ selectedSim.name }}</h3>
+        <p class="text-sims2-sky">{{ selectedSim.age }}</p>
         <div v-if="selectedSim.traits?.length" class="mt-4 flex flex-wrap justify-center gap-2">
           <span 
             v-for="trait in selectedSim.traits" 
             :key="trait"
-            class="px-2 py-1 bg-purple-100 text-purple-600 rounded-full text-xs"
+            class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs"
           >
             {{ trait }}
           </span>
         </div>
         <router-link
           :to="`/sims/${selectedSim.id}`"
-          class="mt-6 block px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl"
+          class="mt-6 block s2-btn s2-btn-green px-6 py-3 font-semibold text-center"
         >
-          Visa profil →
+          View profile →
         </router-link>
       </div>
     </Modal>
@@ -162,6 +156,8 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useSimsStore } from '@/stores/sims'
 import AppHeader from '@/components/AppHeader.vue'
 import Modal from '@/components/Modal.vue'
+import SimAvatar from '@/components/SimAvatar.vue'
+import { GitBranch, ZoomIn, Camera, Search, Globe, Link, User } from 'lucide-vue-next'
 
 const simsStore = useSimsStore()
 
@@ -209,20 +205,20 @@ function getGenderIcon(gender) {
 // Get house name
 function getHouseName(houseId) {
   const house = simsStore.houses.find(h => h.id === houseId)
-  return house?.name || 'Okänt hus'
+  return house?.name || 'Unknown house'
 }
 
 // Relationship type labels in Swedish
 function getRelationLabel(type) {
   const labels = {
-    parent: 'förälder',
-    child: 'barn',
-    sibling: 'syskon',
-    spouse: 'gift',
+    parent: 'parent',
+    child: 'child',
+    sibling: 'sibling',
+    spouse: 'spouse',
     ex: 'ex',
-    friend: 'vän',
-    enemy: 'fiende',
-    roommate: 'rumskompis',
+    friend: 'friend',
+    enemy: 'enemy',
+    roommate: 'roommate',
     mentor: 'mentor'
   }
   return labels[type] || type
@@ -330,16 +326,18 @@ async function initCytoscape() {
           'text-margin-y': 8,
           'font-size': '11px',
           'font-weight': '600',
-          'color': '#374151',
+          'color': '#e8dfc8',
+          'text-outline-color': '#0f2438',
+          'text-outline-width': 2,
           'width': 60,
           'height': 60,
-          'background-color': '#e9d5ff',
+          'background-color': '#1e3a5c',
           'background-image': 'data(image)',
           'background-fit': 'cover',
           'background-clip': 'node',
           'border-width': 3,
-          'border-color': '#a855f7',
-          'border-opacity': 0.8,
+          'border-color': '#c9a84c',
+          'border-opacity': 0.9,
           'transition-property': 'border-width, border-color, opacity',
           'transition-duration': '0.2s'
         }
@@ -348,14 +346,14 @@ async function initCytoscape() {
         selector: 'node:selected',
         style: {
           'border-width': 5,
-          'border-color': '#7c3aed'
+          'border-color': '#f0d97a'
         }
       },
       {
         selector: 'node.highlighted',
         style: {
           'border-width': 5,
-          'border-color': '#7c3aed'
+          'border-color': '#f0d97a'
         }
       },
       {
@@ -372,10 +370,12 @@ async function initCytoscape() {
           'target-arrow-shape': 'none',
           'label': 'data(label)',
           'font-size': '9px',
-          'color': '#6b7280',
+          'color': '#6ba3d6',
+          'text-outline-color': '#0f2438',
+          'text-outline-width': 1.5,
           'text-rotation': 'autorotate',
           'text-margin-y': -8,
-          'text-opacity': 0.7,
+          'text-opacity': 0.8,
           'transition-property': 'width, opacity',
           'transition-duration': '0.2s'
         }
@@ -569,7 +569,7 @@ function exportImage() {
   
   const link = document.createElement('a')
   link.href = URL.createObjectURL(png)
-  link.download = 'slakttrad.png'
+  link.download = 'family-tree.png'
   link.click()
   URL.revokeObjectURL(link.href)
 }
