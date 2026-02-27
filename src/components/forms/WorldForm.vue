@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="saveWorld" class="space-y-4">
     <!-- Error message -->
-    <div v-if="errorMessage" class="bg-red-500/15 border border-red-500/30 rounded-xl p-3 text-sm text-red-300">
+    <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600">
       ⚠️ {{ errorMessage }}
     </div>
 
@@ -39,7 +39,7 @@
       </label>
       <div class="flex items-center gap-4">
         <div 
-          class="w-24 h-24 rounded-xl bg-black/20 flex items-center justify-center overflow-hidden s2-upload-zone"
+            class="w-24 h-24 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden s2-upload-zone"
         >
           <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
           <span v-else class="text-3xl">🌍</span>

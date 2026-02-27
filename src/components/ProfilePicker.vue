@@ -2,12 +2,12 @@
   <div class="relative" ref="pickerRef">
     <button
       @click="open = !open"
-      class="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 transition-colors text-sm"
+      class="flex items-center gap-2 px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg border border-white/30 transition-colors text-sm"
     >
-      <Save :size="12" class="text-sims2-sky" />
+      <Save :size="12" class="text-white/80" />
       <span class="font-medium text-white max-w-[100px] truncate">{{ activeProfile?.name || 'Default Save' }}</span>
-      <ChevronDown v-if="!open" :size="12" class="text-sims2-sky" />
-      <ChevronUp v-else :size="12" class="text-sims2-sky" />
+      <ChevronDown v-if="!open" :size="12" class="text-white/80" />
+      <ChevronUp v-else :size="12" class="text-white/80" />
     </button>
 
     <!-- Dropdown -->
@@ -15,7 +15,7 @@
       v-if="open"
       class="absolute right-0 top-full mt-2 w-64 s2-panel overflow-hidden z-50"
     >
-      <div class="p-3 border-b border-white/10">
+      <div class="p-3 border-b border-gray-200">
         <p class="text-xs font-semibold text-sims2-sky uppercase tracking-wide">Save Files</p>
       </div>
 
@@ -25,19 +25,19 @@
           v-for="profile in simsStore.profiles"
           :key="profile.id"
           @click="selectProfile(profile.id)"
-          class="w-full px-4 py-3 text-left hover:bg-white/10 transition-colors flex items-center justify-between group"
+          class="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center justify-between group"
           :class="profile.id === simsStore.activeProfileId ? 'bg-green-500/15' : ''"
         >
           <div class="flex items-center gap-2">
             <span class="text-sm">{{ profile.id === simsStore.activeProfileId ? '✓' : '' }}</span>
-            <span class="text-sm font-medium" :class="profile.id === simsStore.activeProfileId ? 'text-green-300' : 'text-sims2-cream'">
+            <span class="text-sm font-medium" :class="profile.id === simsStore.activeProfileId ? 'text-green-700' : 'text-sims2-cream'">
               {{ profile.name }}
             </span>
           </div>
           <button
             v-if="profile.id !== 'default'"
             @click.stop="confirmDelete(profile)"
-            class="text-sims2-sky/30 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 text-xs"
+            class="text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 text-xs"
           >
             <Trash2 :size="12" />
           </button>
@@ -45,7 +45,7 @@
       </div>
 
       <!-- Create new -->
-      <div class="border-t border-white/10 p-3">
+      <div class="border-t border-gray-200 p-3">
         <div v-if="!creating" class="flex justify-center">
           <button
             @click="creating = true"
@@ -59,7 +59,7 @@
             v-model="newName"
             @keyup.enter="createProfile"
             placeholder="Save name..."
-            class="flex-1 px-3 py-1.5 text-sm bg-black/30 border border-sims2-sky/20 rounded-lg text-sims2-cream placeholder-sims2-sky/40 focus:border-sims2-sky/50 outline-none"
+            class="flex-1 px-3 py-1.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-sims2-cream placeholder-gray-400 focus:border-emerald-400 outline-none"
             ref="nameInput"
           />
           <button

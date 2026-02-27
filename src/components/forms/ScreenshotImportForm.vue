@@ -3,12 +3,12 @@
     <!-- Step 1: Upload -->
     <div v-if="step === 'upload'" class="space-y-4">
       <!-- Instructions -->
-      <div class="bg-blue-500/10 border border-blue-500/25 rounded-xl p-4">
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
         <h4 class="font-semibold text-[var(--s2-sky)] mb-2">📸 How to do it:</h4>
-        <ol class="text-sm text-blue-300 space-y-1 list-decimal list-inside">
+        <ol class="text-sm text-blue-600 space-y-1 list-decimal list-inside">
           <li>Open Sims 4 and click on your Sim</li>
           <li>Open the Simology panel (shows traits, skills etc)</li>
-          <li>Press <kbd class="px-1.5 py-0.5 bg-blue-500/30 rounded text-xs">C</kbd> to take a screenshot</li>
+          <li>Press <kbd class="px-1.5 py-0.5 bg-blue-100 rounded text-xs">C</kbd> to take a screenshot</li>
           <li>Upload the image below</li>
         </ol>
       </div>
@@ -22,7 +22,7 @@
         class="border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all"
         :class="isDragging 
           ? 'border-green-500/60 bg-green-500/10' 
-          : 'border-[var(--s2-border)] hover:border-[var(--s2-border-strong)] hover:bg-white/5'"
+          : 'border-[var(--s2-border)] hover:border-[var(--s2-border-strong)] hover:bg-gray-50'"
       >
         <div class="text-5xl mb-4">{{ isDragging ? '📥' : '🖼️' }}</div>
         <p class="text-[var(--s2-cream)] font-medium mb-2">
@@ -43,7 +43,7 @@
         <img 
           :src="previewUrl" 
           alt="Preview" 
-          class="w-full rounded-xl shadow-sm max-h-64 object-contain bg-black/20"
+          class="w-full rounded-xl shadow-sm max-h-64 object-contain bg-gray-100"
         />
         <button
           @click="clearFile"
@@ -79,7 +79,7 @@
         
         <!-- Progress bar -->
         <div class="max-w-xs mx-auto">
-          <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+          <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
             <div 
               class="h-full bg-gradient-to-r from-green-500 to-emerald-600 transition-all duration-300"
               :style="{ width: `${progress}%` }"
@@ -94,18 +94,18 @@
         v-if="previewUrl"
         :src="previewUrl" 
         alt="Preview" 
-        class="w-full rounded-xl shadow-sm max-h-40 object-contain bg-black/20 opacity-50"
+        class="w-full rounded-xl shadow-sm max-h-40 object-contain bg-gray-100 opacity-50"
       />
     </div>
 
     <!-- Step 3: Results -->
     <div v-if="step === 'results'" class="space-y-4">
       <!-- Error state -->
-      <div v-if="error" class="bg-red-500/10 border border-red-500/25 rounded-xl p-4">
-        <h4 class="font-semibold text-red-300 flex items-center gap-2">
+      <div v-if="error" class="bg-red-50 border border-red-200 rounded-xl p-4">
+        <h4 class="font-semibold text-red-600 flex items-center gap-2">
           <span>⚠️</span> Could not analyze the image
         </h4>
-        <p class="text-sm text-red-300 mt-1">{{ error }}</p>
+        <p class="text-sm text-red-600 mt-1">{{ error }}</p>
         <button
           @click="resetToUpload"
           class="mt-3 s2-btn s2-btn-danger px-4 py-2 text-sm"
@@ -121,7 +121,7 @@
           <img 
             :src="previewUrl" 
             alt="Preview" 
-            class="w-16 h-16 rounded-lg object-cover bg-black/20"
+            class="w-16 h-16 rounded-lg object-cover bg-gray-100"
           />
           <div class="flex-1">
             <p class="font-medium text-[var(--s2-cream)]">Found Sim data</p>
@@ -182,8 +182,8 @@
                 @click="toggleTrait(trait)"
                 class="px-3 py-1 rounded-full text-sm transition-all"
                 :class="formData.traits.includes(trait) 
-                  ? 'bg-green-500/30 text-green-300 ring-1 ring-green-500/50' 
-                  : 'bg-white/10 text-[var(--s2-cream)] hover:bg-white/20'"
+                  ? 'bg-green-100 text-green-700 ring-1 ring-green-400' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
                 :disabled="formData.traits.length >= 3 && !formData.traits.includes(trait)"
               >
                 {{ trait }}
@@ -260,7 +260,7 @@
           </div>
 
           <!-- Actions -->
-          <div class="flex gap-3 pt-4 border-t border-white/10">
+          <div class="flex gap-3 pt-4 border-t border-gray-200">
             <button
               type="button"
               @click="$emit('cancel')"
@@ -302,9 +302,9 @@ const ConfidenceBadge = {
   `,
   computed: {
     confidenceClass() {
-      if (this.confidence >= 90) return 'bg-green-500/20 text-green-300'
-      if (this.confidence >= 70) return 'bg-yellow-500/20 text-yellow-300'
-      return 'bg-red-500/20 text-red-300'
+      if (this.confidence >= 90) return 'bg-green-100 text-green-700'
+      if (this.confidence >= 70) return 'bg-yellow-100 text-yellow-700'
+      return 'bg-red-100 text-red-700'
     }
   }
 }

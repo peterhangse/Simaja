@@ -35,7 +35,7 @@
           :key="template.text"
           type="button"
           @click="addTemplate(template.text)"
-          class="px-3 py-1 bg-amber-500/15 text-amber-300 rounded-full text-sm hover:bg-amber-500/25 transition-colors border border-amber-500/20"
+            class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm hover:bg-amber-100 transition-colors border border-amber-200"
         >
           {{ template.icon }} {{ template.label }}
         </button>

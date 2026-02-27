@@ -7,7 +7,7 @@
       <!-- Page header -->
       <div class="flex items-center justify-between mb-8">
         <div>
-          <h2 class="text-3xl font-bold text-sims2-gold font-display"><Globe :size="28" class="inline text-green-400" /> My Worlds</h2>
+          <h2 class="text-3xl font-bold text-sims2-gold font-display"><Globe :size="28" class="inline text-green-600" /> My Worlds</h2>
           <p class="text-sims2-sky mt-1">Manage your Sims worlds</p>
         </div>
         <button
@@ -66,7 +66,7 @@
                 @click.stop="confirmDelete(world)"
                 class="w-8 h-8 rounded-full bg-black/50 hover:bg-red-900/70 flex items-center justify-center backdrop-blur-sm border border-white/20"
               >
-                <Trash2 :size="14" class="text-red-400" />
+                <Trash2 :size="14" class="text-red-500" />
               </button>
             </div>
           </div>
@@ -116,11 +116,11 @@
     <!-- Delete confirmation -->
     <Modal v-model="showDeleteModal" title="Delete world?">
       <div class="text-center">
-        <AlertTriangle :size="40" class="mx-auto text-amber-400" />
+        <AlertTriangle :size="40" class="mx-auto text-amber-500" />
         <p class="text-sims2-cream mt-4 mb-6">
           Are you sure you want to delete <strong class="text-sims2-gold">{{ worldToDelete?.name }}</strong>?
           <br />
-          <span class="text-red-400 text-sm">This will also delete all houses and Sims in the world!</span>
+          <span class="text-red-600 text-sm">This will also delete all houses and Sims in the world!</span>
         </p>
         <div class="flex gap-3">
           <button

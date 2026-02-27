@@ -11,11 +11,11 @@
         <!-- Modal content — dark Sims 2 panel -->
         <div class="relative s2-panel w-full max-w-lg max-h-[90vh] overflow-hidden">
           <!-- Header -->
-          <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <h3 class="text-xl font-bold text-sims2-gold font-display tracking-wide">{{ title }}</h3>
             <button 
               @click="$emit('update:modelValue', false)"
-              class="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/30 flex items-center justify-center transition-colors text-sims2-sky hover:text-red-300"
+              class="w-8 h-8 rounded-full bg-gray-100 hover:bg-red-50 flex items-center justify-center transition-colors text-gray-400 hover:text-red-500"
             >
               ✕
             </button>

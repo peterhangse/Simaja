@@ -19,10 +19,10 @@
         <Transition name="slide" mode="out-in">
           <div v-if="currentSlide === 1" key="slide1" class="text-center">
             <div class="w-32 h-40 mx-auto mb-6 animate-bounce-slow">
-              <PlumbobIcon class="w-full h-full text-green-400 plumbob-glow" />
+              <PlumbobIcon class="w-full h-full text-green-600 plumbob-glow" />
             </div>
             <h2 class="text-3xl font-bold text-sims2-gold mb-4 font-display">
-              Welcome to Simaja! <Gamepad2 :size="28" class="inline text-green-400" />
+              Welcome to Simaja! <Gamepad2 :size="28" class="inline text-green-600" />
             </h2>
             <p class="text-sims2-cream text-lg leading-relaxed">
               Your personal app to keep track of all your Sims, 
@@ -36,7 +36,7 @@
           <div v-if="currentSlide === 2" key="slide2" class="text-center">
             <div class="grid grid-cols-3 gap-4 mb-6">
               <div class="p-4 s2-panel-inner rounded-2xl">
-                <Globe :size="28" class="mx-auto text-green-400" />
+                <Globe :size="28" class="mx-auto text-green-600" />
                 <p class="text-sm text-sims2-cream mt-2">Worlds</p>
               </div>
               <div class="p-4 s2-panel-inner rounded-2xl">
@@ -63,7 +63,7 @@
         <Transition name="slide" mode="out-in">
           <div v-if="currentSlide === 3" key="slide3" class="text-center">
             <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-green-500/30 to-emerald-600/30 rounded-full flex items-center justify-center shadow-lg border-2 border-green-500/40">
-              <Hand :size="36" class="text-green-400" />
+              <Hand :size="36" class="text-green-600" />
             </div>
             <h2 class="text-2xl font-bold text-sims2-gold mb-4">
               What's your name?
@@ -75,7 +75,7 @@
               v-model="userName"
               type="text"
               placeholder="Your name..."
-              class="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-sims2-sky/20 text-sims2-cream placeholder-sims2-sky/40 focus:border-sims2-sky/50 outline-none text-lg text-center transition-all"
+              class="w-full px-4 py-3 rounded-xl bg-white border-2 border-gray-200 text-sims2-cream placeholder-gray-400 focus:border-emerald-400 outline-none text-lg text-center transition-all"
               @keyup.enter="completeOnboarding"
             />
           </div>

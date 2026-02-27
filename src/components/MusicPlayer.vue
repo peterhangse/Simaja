@@ -17,14 +17,14 @@
       class="s2-panel w-72 overflow-hidden"
     >
       <!-- Header -->
-      <div class="bg-gradient-to-r from-sims2-navy-light to-sims2-navy px-4 py-3 flex items-center justify-between border-b border-white/10">
-        <div class="flex items-center gap-2 text-sims2-gold">
+      <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 px-4 py-3 flex items-center justify-between border-b border-emerald-800">
+        <div class="flex items-center gap-2 text-white">
           <Music :size="16" />
           <span class="font-semibold text-sm">Sims Music</span>
         </div>
         <button
           @click="expanded = false"
-          class="text-sims2-sky/70 hover:text-white transition-colors"
+          class="text-white/70 hover:text-white transition-colors"
         >
           <X :size="16" />
         </button>
@@ -80,10 +80,10 @@
       </div>
 
       <!-- Playlist toggle -->
-      <div class="border-t border-white/10">
+      <div class="border-t border-gray-200">
         <button
           @click="showPlaylist = !showPlaylist"
-          class="w-full px-4 py-2 text-xs text-sims2-sky hover:bg-white/5 transition-colors flex items-center justify-between"
+          class="w-full px-4 py-2 text-xs text-sims2-sky hover:bg-gray-50 transition-colors flex items-center justify-between"
         >
           <span>Playlist ({{ tracks.length }} tracks)</span>
           <span>{{ showPlaylist ? '▲' : '▼' }}</span>
@@ -93,8 +93,8 @@
             v-for="(track, i) in tracks"
             :key="track.id"
             @click="playTrack(i)"
-            class="w-full px-4 py-2 text-left text-sm hover:bg-white/10 transition-colors flex items-center gap-2"
-            :class="i === currentIndex ? 'bg-green-500/15 text-green-300' : 'text-sims2-cream/80'"
+            class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 transition-colors flex items-center gap-2"
+            :class="i === currentIndex ? 'bg-green-50 text-green-700' : 'text-sims2-cream/80'"
           >
             <span class="text-xs">{{ i === currentIndex && isPlaying ? '♫' : '♪' }}</span>
             <span class="truncate">{{ track.title }}</span>

@@ -1,17 +1,17 @@
 <template>
   <form @submit.prevent="saveSim" class="space-y-4">
     <!-- Error message -->
-    <div v-if="errorMessage" class="bg-red-500/15 border border-red-500/30 rounded-xl p-3 text-sm text-red-300">
+    <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-600">
       ⚠️ {{ errorMessage }}
     </div>
 
     <!-- Sim status toggle -->
-    <div class="flex gap-2 bg-black/20 rounded-xl p-1 border border-white/10">
+    <div class="flex gap-2 bg-gray-100 rounded-xl p-1 border border-gray-200">
       <button
         type="button"
         @click="form.status = 'active'"
         class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all"
-        :class="form.status === 'active' ? 'bg-green-500/20 shadow text-green-400 border border-green-500/30' : 'text-[var(--s2-sky)] hover:text-white'"
+        :class="form.status === 'active' ? 'bg-green-100 shadow text-green-700 border border-green-300' : 'text-gray-500 hover:text-gray-700'"
       >
         👤 Active Sim
       </button>
@@ -19,14 +19,14 @@
         type="button"
         @click="form.status = 'planned'"
         class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all"
-        :class="form.status === 'planned' ? 'bg-amber-500/20 shadow text-amber-400 border border-amber-500/30' : 'text-[var(--s2-sky)] hover:text-white'"
+        :class="form.status === 'planned' ? 'bg-amber-100 shadow text-amber-700 border border-amber-300' : 'text-gray-500 hover:text-gray-700'"
       >
         💡 Planned Sim
       </button>
     </div>
 
     <!-- Tabs -->
-    <div class="flex gap-2 border-b border-white/10 mb-4">
+    <div class="flex gap-2 border-b border-gray-200 mb-4">
       <button
         v-for="tab in visibleTabs"
         :key="tab.id"
@@ -34,8 +34,8 @@
         @click="activeTab = tab.id"
         class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px"
         :class="activeTab === tab.id 
-          ? 'border-[var(--s2-gold)] text-[var(--s2-gold)]' 
-          : 'border-transparent text-[var(--s2-sky)] hover:text-white'"
+          ? 'border-emerald-600 text-emerald-600' 
+          : 'border-transparent text-gray-500 hover:text-gray-700'"
       >
         {{ tab.icon }} {{ tab.label }}
       </button>
@@ -47,7 +47,7 @@
       <div class="flex gap-4">
         <div>
           <div 
-            class="w-24 h-24 rounded-xl bg-black/20 flex items-center justify-center overflow-hidden s2-upload-zone cursor-pointer transition-colors"
+            class="w-24 h-24 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden s2-upload-zone cursor-pointer transition-colors"
             @click="$refs.fileInput.click()"
           >
             <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
@@ -142,8 +142,8 @@
             @click="toggleTrait(trait)"
             class="px-3 py-1 rounded-full text-sm transition-all"
             :class="form.traits.includes(trait) 
-              ? 'bg-green-500/30 text-green-300 ring-1 ring-green-500/50' 
-              : 'bg-white/10 text-[var(--s2-cream)] hover:bg-white/20'"
+              ? 'bg-green-100 text-green-700 ring-1 ring-green-400' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
             :disabled="form.traits.length >= 3 && !form.traits.includes(trait)"
           >
             {{ trait }}
@@ -201,8 +201,8 @@
             @click="toggleSkill(skill)"
             class="px-3 py-1 rounded-full text-sm transition-all"
             :class="form.skills.includes(skill) 
-              ? 'bg-blue-500/30 text-blue-300 ring-1 ring-blue-500/50' 
-              : 'bg-white/10 text-[var(--s2-cream)] hover:bg-white/20'"
+              ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-400' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
           >
             {{ skill }}
           </button>
@@ -224,7 +224,7 @@
     </div>
 
     <!-- Actions -->
-    <div class="flex gap-3 pt-4 border-t border-white/10">
+    <div class="flex gap-3 pt-4 border-t border-gray-200">
       <button
         type="button"
         @click="$emit('cancel')"

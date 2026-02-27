@@ -34,7 +34,7 @@
             v-model="searchQuery"
             type="text"
             placeholder="Search Sim..."
-            class="px-3 py-2 rounded-lg bg-black/30 border-2 border-sims2-sky/20 text-sims2-cream placeholder-sims2-sky/50 w-40 focus:border-sims2-sky/50 outline-none"
+            class="px-3 py-2 rounded-lg bg-white border-2 border-gray-200 text-sims2-cream placeholder-gray-400 w-40 focus:border-emerald-400 outline-none"
             @keyup.enter="searchAndCenter"
           />
           <button
@@ -111,7 +111,7 @@
             <span 
               v-for="trait in hoverSim.traits.slice(0, 3)" 
               :key="trait"
-              class="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded-full text-xs"
+              class="px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full text-xs"
             >
               {{ trait }}
             </span>
@@ -135,7 +135,7 @@
           <span 
             v-for="trait in selectedSim.traits" 
             :key="trait"
-            class="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs"
+            class="px-2 py-1 bg-purple-100 text-purple-600 rounded-full text-xs"
           >
             {{ trait }}
           </span>
@@ -326,17 +326,17 @@ async function initCytoscape() {
           'text-margin-y': 8,
           'font-size': '11px',
           'font-weight': '600',
-          'color': '#e8dfc8',
-          'text-outline-color': '#0f2438',
+          'color': '#374151',
+          'text-outline-color': '#ffffff',
           'text-outline-width': 2,
           'width': 60,
           'height': 60,
-          'background-color': '#1e3a5c',
+          'background-color': '#f0fdf4',
           'background-image': 'data(image)',
           'background-fit': 'cover',
           'background-clip': 'node',
           'border-width': 3,
-          'border-color': '#c9a84c',
+          'border-color': '#059669',
           'border-opacity': 0.9,
           'transition-property': 'border-width, border-color, opacity',
           'transition-duration': '0.2s'
@@ -346,14 +346,14 @@ async function initCytoscape() {
         selector: 'node:selected',
         style: {
           'border-width': 5,
-          'border-color': '#f0d97a'
+          'border-color': '#10b981'
         }
       },
       {
         selector: 'node.highlighted',
         style: {
           'border-width': 5,
-          'border-color': '#f0d97a'
+          'border-color': '#10b981'
         }
       },
       {
@@ -370,8 +370,8 @@ async function initCytoscape() {
           'target-arrow-shape': 'none',
           'label': 'data(label)',
           'font-size': '9px',
-          'color': '#6ba3d6',
-          'text-outline-color': '#0f2438',
+          'color': '#6b7280',
+          'text-outline-color': '#ffffff',
           'text-outline-width': 1.5,
           'text-rotation': 'autorotate',
           'text-margin-y': -8,

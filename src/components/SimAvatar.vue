@@ -49,13 +49,13 @@ const frameClass = computed(() => {
 
 const bgClass = computed(() => {
   if (props.sim?.imageUrl) return ''
-  if (isPlanned.value) return 'bg-gradient-to-br from-amber-800/40 to-amber-900/60'
-  return 'bg-gradient-to-br from-sims2-navy to-sims2-panel'
+  if (isPlanned.value) return 'bg-gradient-to-br from-amber-50 to-amber-100'
+  return 'bg-gradient-to-br from-green-50 to-emerald-100'
 })
 
 const iconColor = computed(() => {
-  if (isPlanned.value) return 'text-amber-400'
-  return 'text-sims2-sky'
+  if (isPlanned.value) return 'text-amber-500'
+  return 'text-emerald-400'
 })
 </script>
 

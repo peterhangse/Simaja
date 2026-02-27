@@ -6,7 +6,7 @@
       <!-- Page header -->
       <div class="flex items-center justify-between mb-8">
         <div>
-          <h2 class="text-3xl font-bold text-sims2-gold font-display"><Users :size="28" class="inline text-purple-400" /> All Sims</h2>
+          <h2 class="text-3xl font-bold text-sims2-gold font-display"><Users :size="28" class="inline text-purple-600" /> All Sims</h2>
           <p class="text-sims2-sky mt-1">{{ simsStore.activeSims.length }} active<span v-if="simsStore.plannedSims.length">, {{ simsStore.plannedSims.length }} planned</span></p>
         </div>
         <div class="flex gap-2">
@@ -40,8 +40,8 @@
           @click="statusFilter = tab.value"
           class="px-4 py-2 rounded-lg text-sm font-bold transition-all border-2"
           :class="statusFilter === tab.value
-            ? 'bg-sims2-navy border-sims2-sky text-white shadow-md shadow-sims2-sky/20'
-            : 'bg-sims2-panel/60 text-sims2-sky border-transparent hover:border-sims2-sky/30'"
+            ? 'bg-emerald-600 border-emerald-600 text-white shadow-md shadow-green-200'
+            : 'bg-sims2-panel/60 text-sims2-sky border-transparent hover:border-gray-300'"
         >
           {{ tab.icon }} {{ tab.label }}
           <span class="ml-1 opacity-70">({{ tab.count }})</span>
@@ -73,7 +73,7 @@
               v-model="searchQuery"
               type="text"
               placeholder="Search by name..."
-              class="w-full px-4 py-2 rounded-lg bg-black/30 border-2 border-sims2-sky/20 text-sims2-cream placeholder-sims2-sky/50 focus:border-sims2-sky/50 outline-none"
+              class="w-full px-4 py-2 rounded-lg bg-white border-2 border-gray-200 text-sims2-cream placeholder-gray-400 focus:border-emerald-400 outline-none"
             />
           </div>
           <button 
@@ -81,14 +81,14 @@
             class="text-sm text-sims2-sky hover:text-sims2-gold flex items-center gap-1"
           >
             More filters {{ showMoreFilters ? '▲' : '▼' }}
-            <span v-if="activeFilterCount > 0" class="ml-1 w-5 h-5 bg-purple-500/30 text-purple-300 rounded-full text-xs flex items-center justify-center">
+            <span v-if="activeFilterCount > 0" class="ml-1 w-5 h-5 bg-purple-100 text-purple-600 rounded-full text-xs flex items-center justify-center">
               {{ activeFilterCount }}
             </span>
           </button>
         </div>
         
         <!-- Expandable advanced filters -->
-        <div v-if="showMoreFilters" class="flex flex-wrap gap-4 items-center pt-3 border-t border-sims2-sky/10">
+        <div v-if="showMoreFilters" class="flex flex-wrap gap-4 items-center pt-3 border-t border-gray-200">
           <div class="flex items-center gap-2">
             <span class="text-sims2-sky">⚥</span>
             <select v-model="filterGender" class="s2-select">
@@ -118,7 +118,7 @@
           <button 
             v-if="activeFilterCount > 0"
             @click="clearFilters"
-            class="text-sm text-red-400 hover:text-red-300"
+            class="text-sm text-red-600 hover:text-red-500"
           >
             Clear filters
           </button>
@@ -166,13 +166,13 @@
           <div class="p-3">
             <div class="flex items-center gap-1">
               <h3 class="font-bold text-sims2-cream truncate">{{ sim.name }}</h3>
-              <span v-if="sim.status === 'planned'" class="flex-shrink-0 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 rounded text-[10px] font-semibold"><CloudCog :size="10" class="inline" /></span>
+              <span v-if="sim.status === 'planned'" class="flex-shrink-0 px-1.5 py-0.5 bg-amber-100 text-amber-600 rounded text-[10px] font-semibold"><CloudCog :size="10" class="inline" /></span>
             </div>
             <p class="text-sm text-sims2-sky">{{ sim.age || 'Unknown age' }}</p>
             
             <!-- World/House info -->
             <div class="mt-2 text-xs text-sims2-sky/60">
-              <span v-if="sim.status === 'planned' && !getHouseInfo(sim.houseId)" class="text-amber-400 flex items-center gap-1"><CloudCog :size="12" /> Planned</span>
+              <span v-if="sim.status === 'planned' && !getHouseInfo(sim.houseId)" class="text-amber-600 flex items-center gap-1"><CloudCog :size="12" /> Planned</span>
               <span v-else-if="getHouseInfo(sim.houseId)" class="flex items-center gap-1"><Home :size="12" /> {{ getHouseInfo(sim.houseId).house.name }}</span>
             </div>
 
@@ -181,7 +181,7 @@
               <span 
                 v-for="trait in sim.traits.slice(0, 2)" 
                 :key="trait"
-                class="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded-full text-xs"
+                class="px-2 py-0.5 bg-purple-100 text-purple-600 rounded-full text-xs"
               >
                 {{ trait }}
               </span>

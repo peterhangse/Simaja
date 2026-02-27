@@ -34,8 +34,8 @@
                 <div>
                   <div class="flex items-center gap-3">
                     <h2 class="text-3xl font-bold text-sims2-gold font-display">{{ sim.name }}</h2>
-                    <span v-if="sim.status === 'planned'" class="px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm font-semibold flex items-center gap-1"><CloudCog :size="14" /> Planned</span>
-                    <span v-else class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-semibold flex items-center gap-1"><CircleDot :size="14" /> Active</span>
+                    <span v-if="sim.status === 'planned'" class="px-3 py-1 bg-amber-100 text-amber-600 rounded-full text-sm font-semibold flex items-center gap-1"><CloudCog :size="14" /> Planned</span>
+                    <span v-else class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-semibold flex items-center gap-1"><CircleDot :size="14" /> Active</span>
                   </div>
                   <p class="text-sims2-sky mt-1">
                     {{ sim.age || 'Unknown age' }}
@@ -51,7 +51,7 @@
                   </button>
                   <button
                     @click="showDeleteModal = true"
-                    class="px-4 py-2 bg-red-900/40 text-red-400 rounded-lg border-2 border-red-500/30 hover:bg-red-900/60 transition-colors"
+                    class="px-4 py-2 bg-red-50 text-red-600 rounded-lg border-2 border-red-200 hover:bg-red-100 transition-colors"
                   >
                     <Trash2 :size="14" />
                   </button>
@@ -66,7 +66,7 @@
                 <span class="mx-2">→</span>
                 <span class="inline-flex items-center gap-1"><Home :size="14" /> {{ houseInfo.house.name }}</span>
               </div>
-              <div v-else-if="sim.status === 'planned'" class="mt-4 text-amber-400 text-sm flex items-center gap-1">
+              <div v-else-if="sim.status === 'planned'" class="mt-4 text-amber-600 text-sm flex items-center gap-1">
                 <CloudCog :size="14" /> No house assigned yet — this Sim is still being planned
               </div>
 
@@ -77,7 +77,7 @@
                   <span 
                     v-for="trait in sim.traits" 
                     :key="trait"
-                    class="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm"
+                    class="px-3 py-1 bg-purple-100 text-purple-600 rounded-full text-sm"
                   >
                     {{ trait }}
                   </span>
@@ -87,7 +87,7 @@
               <!-- Aspiration -->
               <div v-if="sim.aspiration" class="mt-4">
                 <p class="text-sm text-sims2-sky">Aspiration:</p>
-                <p class="text-purple-300 font-medium flex items-center gap-1"><Star :size="14" /> {{ sim.aspiration }}</p>
+                <p class="text-purple-600 font-medium flex items-center gap-1"><Star :size="14" /> {{ sim.aspiration }}</p>
               </div>
             </div>
           </div>
@@ -102,8 +102,8 @@
               @click="activeTab = tab.id"
               class="flex-1 px-6 py-4 text-center font-bold transition-colors"
               :class="activeTab === tab.id 
-                ? 'text-sims2-gold border-b-2 border-sims2-gold bg-white/5' 
-                : 'text-sims2-sky hover:text-sims2-cream hover:bg-white/5'"
+                ? 'text-sims2-gold border-b-2 border-sims2-gold bg-emerald-50' 
+                : 'text-sims2-sky hover:text-sims2-cream hover:bg-gray-50'"
             >
               {{ tab.icon }} {{ tab.label }}
             </button>
@@ -114,7 +114,7 @@
             <div v-if="activeTab === 'details'" class="space-y-6">
               <!-- Appearance -->
               <div v-if="sim.hairColor || sim.eyeColor || sim.style">
-                <h4 class="font-bold text-sims2-gold mb-3 flex items-center gap-2"><Shirt :size="16" class="text-purple-400" /> Appearance</h4>
+                <h4 class="font-bold text-sims2-gold mb-3 flex items-center gap-2"><Shirt :size="16" class="text-purple-600" /> Appearance</h4>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                   <div v-if="sim.hairColor">
                     <span class="text-sims2-sky">Hair color:</span>
@@ -133,7 +133,7 @@
 
               <!-- Career -->
               <div v-if="sim.career || sim.skills?.length">
-                <h4 class="font-bold text-sims2-gold mb-3 flex items-center gap-2"><Briefcase :size="16" class="text-blue-400" /> Career & Skills</h4>
+                <h4 class="font-bold text-sims2-gold mb-3 flex items-center gap-2"><Briefcase :size="16" class="text-blue-600" /> Career & Skills</h4>
                 <div v-if="sim.career" class="mb-3">
                   <span class="text-sims2-sky">Career:</span>
                   <p class="font-medium text-sims2-cream">{{ sim.career }}</p>
@@ -142,7 +142,7 @@
                   <span 
                     v-for="skill in sim.skills" 
                     :key="skill"
-                    class="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm"
+                    class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm"
                   >
                     {{ skill }}
                   </span>
@@ -157,18 +157,18 @@
 
               <!-- Concept (planned sims) -->
               <div v-if="sim.concept">
-                <h4 class="font-bold text-sims2-gold mb-3 flex items-center gap-2"><Lightbulb :size="16" class="text-amber-400" /> Concept</h4>
+                <h4 class="font-bold text-sims2-gold mb-3 flex items-center gap-2"><Lightbulb :size="16" class="text-amber-500" /> Concept</h4>
                 <p class="text-sims2-cream whitespace-pre-wrap">{{ sim.concept }}</p>
               </div>
 
               <!-- Interests -->
               <div v-if="sim.interests?.length">
-                <h4 class="font-bold text-sims2-gold mb-3 flex items-center gap-2"><Sparkles :size="16" class="text-amber-400" /> Interests</h4>
+                <h4 class="font-bold text-sims2-gold mb-3 flex items-center gap-2"><Sparkles :size="16" class="text-amber-500" /> Interests</h4>
                 <div class="flex flex-wrap gap-2">
                   <span
                     v-for="interest in sim.interests"
                     :key="interest"
-                    class="px-3 py-1 bg-amber-500/20 text-amber-300 rounded-full text-sm"
+                    class="px-3 py-1 bg-amber-100 text-amber-600 rounded-full text-sm"
                   >
                     {{ interest }}
                   </span>
@@ -233,7 +233,7 @@
                   </div>
                   <button
                     @click="deleteRelation(rel.id)"
-                    class="text-sims2-sky/40 hover:text-red-400 transition-colors"
+                    class="text-gray-300 hover:text-red-500 transition-colors"
                   >
                     <Trash2 :size="14" />
                   </button>
@@ -270,7 +270,7 @@
                     </span>
                     <button
                       @click="deleteDiaryEntry(entry.id)"
-                      class="text-sims2-sky/40 hover:text-red-400 transition-colors text-sm"
+                      class="text-gray-300 hover:text-red-500 transition-colors text-sm"
                     >
                       <Trash2 :size="12" />
                     </button>
@@ -292,11 +292,11 @@
     <!-- Delete Sim Modal -->
     <Modal v-model="showDeleteModal" title="Delete Sim?">
       <div class="text-center">
-        <AlertTriangle :size="40" class="mx-auto text-amber-400" />
+        <AlertTriangle :size="40" class="mx-auto text-amber-500" />
         <p class="text-sims2-cream mt-4 mb-6">
           Are you sure you want to delete <strong class="text-sims2-gold">{{ sim?.name }}</strong>?
           <br />
-          <span class="text-red-400 text-sm">This cannot be undone!</span>
+          <span class="text-red-600 text-sm">This cannot be undone!</span>
         </p>
         <div class="flex gap-3">
           <button
@@ -385,7 +385,7 @@ const relationshipTypes = {
   friend: { label: 'Friend', color: 'text-blue-600', barColor: 'bg-blue-400', strength: 60 },
   enemy: { label: 'Enemy', color: 'text-red-600', barColor: 'bg-red-500', strength: 10 },
   roommate: { label: 'Roommate', color: 'text-yellow-600', barColor: 'bg-yellow-400', strength: 50 },
-  mentor: { label: 'Mentor', color: 'text-purple-300', barColor: 'bg-purple-400', strength: 40 }
+  mentor: { label: 'Mentor', color: 'text-purple-600', barColor: 'bg-purple-400', strength: 40 }
 }
 
 function relationshipLabel(type) {

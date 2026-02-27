@@ -49,7 +49,7 @@
 
         <!-- Houses section -->
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-2xl font-bold text-sims2-gold font-display"><Home :size="22" class="inline text-blue-400" /> Houses in {{ world.name }}</h3>
+          <h3 class="text-2xl font-bold text-sims2-gold font-display"><Home :size="22" class="inline text-blue-600" /> Houses in {{ world.name }}</h3>
           <button
             @click="showAddHouseModal = true"
             class="s2-btn flex items-center gap-1"
@@ -98,7 +98,7 @@
                   @click.stop="confirmDeleteHouse(house)"
                   class="w-8 h-8 rounded-full bg-black/50 hover:bg-red-900/70 flex items-center justify-center backdrop-blur-sm border border-white/20"
                 >
-                  <Trash2 :size="14" class="text-red-400" />
+                  <Trash2 :size="14" class="text-red-500" />
                 </button>
               </div>
             </div>
@@ -122,7 +122,7 @@
                   </router-link>
                   <button
                     @click="addSimToHouse(house)"
-                    class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-green-500/20 hover:text-green-400 transition-colors text-sims2-sky/50 border border-sims2-sky/20"
+                    class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-green-100 hover:text-green-600 transition-colors text-gray-400 border border-gray-200"
                     title="Add Sim"
                   >
                     +
@@ -162,7 +162,7 @@
     <!-- Delete House confirmation -->
     <Modal v-model="showDeleteHouseModal" title="Delete house?">
       <div class="text-center">
-        <AlertTriangle :size="40" class="mx-auto text-amber-400" />
+        <AlertTriangle :size="40" class="mx-auto text-amber-500" />
         <p class="text-sims2-cream mt-4 mb-6">
           Are you sure you want to delete <strong class="text-sims2-gold">{{ houseToDelete?.name }}</strong>?
         </p>

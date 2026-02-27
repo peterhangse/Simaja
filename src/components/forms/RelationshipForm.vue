@@ -34,7 +34,7 @@
           class="px-3 py-2 rounded-xl text-sm transition-all flex flex-col items-center"
           :class="form.type === type.value 
             ? `${type.bgActive} ${type.textActive} ring-2 ring-offset-1 ring-offset-transparent ${type.ring}` 
-            : 'bg-white/10 text-[var(--s2-cream)] hover:bg-white/20'"
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
         >
           <span class="text-lg">{{ type.icon }}</span>
           <span>{{ type.label }}</span>
@@ -85,15 +85,15 @@ const form = reactive({
 })
 
 const relationshipTypes = [
-  { value: 'parent', label: 'Parent', icon: '👨‍👩‍👧', bgActive: 'bg-green-500/20', textActive: 'text-green-300', ring: 'ring-green-500/50' },
-  { value: 'child', label: 'Child', icon: '👶', bgActive: 'bg-green-500/20', textActive: 'text-green-300', ring: 'ring-green-500/50' },
-  { value: 'sibling', label: 'Sibling', icon: '👫', bgActive: 'bg-green-500/20', textActive: 'text-green-300', ring: 'ring-green-500/50' },
-  { value: 'spouse', label: 'Spouse', icon: '💕', bgActive: 'bg-pink-500/20', textActive: 'text-pink-300', ring: 'ring-pink-500/50' },
-  { value: 'ex', label: 'Ex', icon: '💔', bgActive: 'bg-pink-500/20', textActive: 'text-pink-300', ring: 'ring-pink-500/40' },
-  { value: 'friend', label: 'Friend', icon: '🤝', bgActive: 'bg-blue-500/20', textActive: 'text-blue-300', ring: 'ring-blue-500/50' },
-  { value: 'enemy', label: 'Enemy', icon: '😠', bgActive: 'bg-red-500/20', textActive: 'text-red-300', ring: 'ring-red-500/50' },
-  { value: 'roommate', label: 'Roommate', icon: '🏠', bgActive: 'bg-yellow-500/20', textActive: 'text-yellow-300', ring: 'ring-yellow-500/50' },
-  { value: 'mentor', label: 'Mentor', icon: '🎓', bgActive: 'bg-purple-500/20', textActive: 'text-purple-300', ring: 'ring-purple-500/50' }
+  { value: 'parent', label: 'Parent', icon: '👨‍👩‍👧', bgActive: 'bg-green-100', textActive: 'text-green-700', ring: 'ring-green-400' },
+  { value: 'child', label: 'Child', icon: '👶', bgActive: 'bg-green-100', textActive: 'text-green-700', ring: 'ring-green-400' },
+  { value: 'sibling', label: 'Sibling', icon: '👫', bgActive: 'bg-green-100', textActive: 'text-green-700', ring: 'ring-green-400' },
+  { value: 'spouse', label: 'Spouse', icon: '💕', bgActive: 'bg-pink-100', textActive: 'text-pink-700', ring: 'ring-pink-400' },
+  { value: 'ex', label: 'Ex', icon: '💔', bgActive: 'bg-pink-100', textActive: 'text-pink-700', ring: 'ring-pink-400' },
+  { value: 'friend', label: 'Friend', icon: '🤝', bgActive: 'bg-blue-100', textActive: 'text-blue-700', ring: 'ring-blue-400' },
+  { value: 'enemy', label: 'Enemy', icon: '😠', bgActive: 'bg-red-100', textActive: 'text-red-700', ring: 'ring-red-400' },
+  { value: 'roommate', label: 'Roommate', icon: '🏠', bgActive: 'bg-yellow-100', textActive: 'text-yellow-700', ring: 'ring-yellow-400' },
+  { value: 'mentor', label: 'Mentor', icon: '🎓', bgActive: 'bg-purple-100', textActive: 'text-purple-700', ring: 'ring-purple-400' }
 ]
 
 // Group sims by world

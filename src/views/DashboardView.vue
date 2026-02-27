@@ -21,49 +21,49 @@
       <div class="s2-panel p-5 mb-8">
         <h3 class="s2-section-title text-sm uppercase tracking-wider mb-4">Household Status</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <router-link to="/worlds" class="s2-panel-inner p-4 hover:bg-white/5 transition-colors cursor-pointer block">
+          <router-link to="/worlds" class="s2-panel-inner p-4 hover:bg-gray-50 transition-colors cursor-pointer block">
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-2">
-                <Globe :size="16" class="text-green-400" />
+                <Globe :size="16" class="text-green-600" />
                 <span class="text-sm font-bold text-sims2-cream">Worlds</span>
               </div>
-              <span class="text-lg font-bold text-green-400">{{ simsStore.worlds.length }}</span>
+              <span class="text-lg font-bold text-green-600">{{ simsStore.worlds.length }}</span>
             </div>
             <div class="s2-need-bar">
               <div class="s2-need-bar-fill fill-green" :style="{ width: Math.min(100, Math.max(4, (simsStore.worlds.length / 10) * 100)) + '%' }"></div>
             </div>
           </router-link>
-          <router-link to="/worlds" class="s2-panel-inner p-4 hover:bg-white/5 transition-colors cursor-pointer block">
+          <router-link to="/worlds" class="s2-panel-inner p-4 hover:bg-gray-50 transition-colors cursor-pointer block">
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-2">
-                <Home :size="16" class="text-blue-400" />
+                <Home :size="16" class="text-blue-600" />
                 <span class="text-sm font-bold text-sims2-cream">Houses</span>
               </div>
-              <span class="text-lg font-bold text-blue-400">{{ simsStore.houses.length }}</span>
+              <span class="text-lg font-bold text-blue-600">{{ simsStore.houses.length }}</span>
             </div>
             <div class="s2-need-bar">
               <div class="s2-need-bar-fill fill-blue" :style="{ width: Math.min(100, Math.max(4, (simsStore.houses.length / 20) * 100)) + '%' }"></div>
             </div>
           </router-link>
-          <router-link to="/sims" class="s2-panel-inner p-4 hover:bg-white/5 transition-colors cursor-pointer block">
+          <router-link to="/sims" class="s2-panel-inner p-4 hover:bg-gray-50 transition-colors cursor-pointer block">
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-2">
-                <Users :size="16" class="text-purple-400" />
+                <Users :size="16" class="text-purple-600" />
                 <span class="text-sm font-bold text-sims2-cream">Sims</span>
               </div>
-              <span class="text-lg font-bold text-purple-400">{{ simsStore.sims.length }}</span>
+              <span class="text-lg font-bold text-purple-600">{{ simsStore.sims.length }}</span>
             </div>
             <div class="s2-need-bar">
               <div class="s2-need-bar-fill fill-purple" :style="{ width: Math.min(100, Math.max(4, (simsStore.sims.length / 50) * 100)) + '%' }"></div>
             </div>
           </router-link>
-          <router-link to="/family-tree" class="s2-panel-inner p-4 hover:bg-white/5 transition-colors cursor-pointer block">
+          <router-link to="/family-tree" class="s2-panel-inner p-4 hover:bg-gray-50 transition-colors cursor-pointer block">
             <div class="flex items-center justify-between mb-2">
               <div class="flex items-center gap-2">
-                <Heart :size="16" class="text-pink-400" />
+                <Heart :size="16" class="text-pink-600" />
                 <span class="text-sm font-bold text-sims2-cream">Relationships</span>
               </div>
-              <span class="text-lg font-bold text-pink-400">{{ simsStore.relationships.length }}</span>
+              <span class="text-lg font-bold text-pink-600">{{ simsStore.relationships.length }}</span>
             </div>
             <div class="s2-need-bar">
               <div class="s2-need-bar-fill fill-pink" :style="{ width: Math.min(100, Math.max(4, (simsStore.relationships.length / 30) * 100)) + '%' }"></div>
@@ -108,7 +108,7 @@
             v-for="sim in recentSims"
             :key="sim.id"
             :to="`/sims/${sim.id}`"
-            class="s2-panel-inner p-4 hover:bg-white/5 transition-all text-center block"
+            class="s2-panel-inner p-4 hover:bg-gray-50 transition-all text-center block"
           >
             <div class="w-16 h-16 mx-auto mb-2 s2-portrait-frame" :class="sim.status === 'planned' ? 's2-portrait-frame-amber' : 's2-portrait-frame-green'">
               <SimAvatar :sim="sim" size="md" />
@@ -142,7 +142,7 @@
         >
           <Lightbulb :size="16" />
           <span class="text-sm">Show insights</span>
-          <span class="px-2 py-0.5 bg-white/10 text-sims2-sky rounded-full text-xs">{{ totalInsights }}</span>
+          <span class="px-2 py-0.5 bg-gray-100 text-sims2-sky rounded-full text-xs">{{ totalInsights }}</span>
           <span class="text-xs">{{ showInsights ? '▲' : '▼' }}</span>
         </button>
         
@@ -155,7 +155,7 @@
                 class="flex items-center gap-2 text-sm text-sims2-cream hover:text-sims2-gold transition-colors"
                 @click="setNoRelationsFilter"
               >
-                <span class="w-6 h-6 bg-purple-500/30 rounded-full flex items-center justify-center text-xs text-purple-300">
+                <span class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-xs text-purple-600">
                   {{ insights.simsWithoutRelations.length }}
                 </span>
                 <span>Sims without relationships</span>
@@ -167,7 +167,7 @@
                 to="/sims" 
                 class="flex items-center gap-2 text-sm text-sims2-cream hover:text-sims2-gold transition-colors"
               >
-                <span class="w-6 h-6 bg-amber-500/30 rounded-full flex items-center justify-center text-xs text-amber-300">
+                <span class="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center text-xs text-amber-600">
                   {{ insights.elderSims.length }}
                 </span>
                 <span>Elder Sims (may die soon)</span>
@@ -179,7 +179,7 @@
                 to="/sims" 
                 class="flex items-center gap-2 text-sm text-sims2-cream hover:text-sims2-gold transition-colors"
               >
-                <span class="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-xs text-sims2-sky">
+                <span class="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-xs text-sims2-sky">
                   {{ insights.incompleteSims.length }}
                 </span>
                 <span>Incomplete profiles</span>
@@ -192,7 +192,7 @@
                 class="flex items-center gap-2 text-sm text-sims2-cream hover:text-sims2-gold transition-colors"
                 @click="setPlannedFilter"
               >
-                <span class="w-6 h-6 bg-amber-500/30 rounded-full flex items-center justify-center text-xs text-amber-300">
+                <span class="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center text-xs text-amber-600">
                   {{ insights.plannedSims.length }}
                 </span>
                 <span>Planned Sims waiting to be created</span>

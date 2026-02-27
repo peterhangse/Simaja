@@ -9,7 +9,7 @@
              top: `${Math.random() * 100}%`,
              animationDelay: `${i * 0.5}s`
            }">
-        <PlumbobIcon class="w-12 h-12 text-green-400" />
+        <PlumbobIcon class="w-12 h-12 text-green-600" />
       </div>
     </div>
 
@@ -17,7 +17,7 @@
       <!-- Plumbob logo -->
       <div class="flex justify-center mb-6">
         <div class="w-20 h-24 animate-pulse-slow">
-          <PlumbobIcon class="w-full h-full text-green-400 plumbob-glow" />
+          <PlumbobIcon class="w-full h-full text-green-600 plumbob-glow" />
         </div>
       </div>
 
@@ -38,10 +38,10 @@
             v-model="password"
             type="password"
             placeholder="Enter password..."
-            class="w-full px-4 py-3 rounded-xl bg-black/30 border-2 border-sims2-sky/20 text-sims2-cream placeholder-sims2-sky/40 focus:border-sims2-sky/50 outline-none text-lg transition-all"
+            class="w-full px-4 py-3 rounded-xl bg-white border-2 border-gray-200 text-sims2-cream placeholder-gray-400 focus:border-emerald-400 outline-none text-lg transition-all"
             :class="{ 'border-red-400 shake': showError }"
           />
-          <p v-if="showError" class="mt-2 text-sm text-red-400">
+          <p v-if="showError" class="mt-2 text-sm text-red-600">
             {{ errorMessage }}
           </p>
         </div>

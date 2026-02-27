@@ -1,8 +1,8 @@
 <template>
-  <header class="bg-sims2-navy shadow-lg border-b border-sims2-navy-light sticky top-0 z-40">
+  <header class="bg-emerald-600 shadow-lg border-b border-emerald-700 sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
       <router-link to="/" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
-        <PlumbobIcon class="w-8 h-10 text-green-400 plumbob-glow" />
+        <PlumbobIcon class="w-8 h-10 text-green-300 plumbob-glow" />
         <h1 class="text-xl font-bold text-white">
           {{ authStore.userName }}'s Sims
         </h1>
@@ -40,7 +40,7 @@
         </router-link>
         <button 
           @click="logout"
-          class="ml-1 px-3 py-2 text-sims2-sky hover:text-red-300 hover:bg-white/10 rounded-lg transition-colors"
+          class="ml-1 px-3 py-2 text-white/80 hover:text-red-200 hover:bg-white/15 rounded-lg transition-colors"
           title="Log out"
         >
           <LogOut :size="16" />
@@ -68,10 +68,10 @@ function logout() {
 
 <style scoped>
 .nav-link {
-  @apply px-3 py-2 rounded-lg text-sims2-sky hover:bg-white/10 hover:text-white transition-colors flex items-center gap-1.5 text-sm font-medium;
+  @apply px-3 py-2 rounded-lg text-white/80 hover:bg-white/15 hover:text-white transition-colors flex items-center gap-1.5 text-sm font-medium;
 }
 
 .nav-link-active {
-  @apply bg-white/15 text-white;
+  @apply bg-white/20 text-white;
 }
 </style>
