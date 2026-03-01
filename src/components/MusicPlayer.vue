@@ -34,19 +34,42 @@
       <div class="px-4 py-3">
         <p class="text-xs text-sims2-sky uppercase tracking-wide">Now playing</p>
         <p class="text-sm font-medium text-sims2-cream truncate mt-1">
-          {{ currentTrack.title }}
+          The Sims 1 & 2 – Calm & Relaxing
         </p>
-        <p class="text-xs text-sims2-sky/60">{{ currentTrack.game }}</p>
+        <p class="text-xs text-sims2-sky/60">1 Hour Mix</p>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="px-4 pb-2">
+        <div
+          class="relative w-full h-1.5 bg-gray-700 rounded-full cursor-pointer group"
+          @click="seekTo"
+          ref="progressBar"
+        >
+          <div
+            class="absolute top-0 left-0 h-full bg-emerald-500 rounded-full transition-all duration-200"
+            :style="{ width: progressPercent + '%' }"
+          />
+          <div
+            class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity"
+            :style="{ left: progressPercent + '%', marginLeft: '-6px' }"
+          />
+        </div>
+        <div class="flex justify-between mt-1">
+          <span class="text-[10px] text-sims2-sky/60">{{ formatTime(currentTime) }}</span>
+          <span class="text-[10px] text-sims2-sky/60">{{ formatTime(duration) }}</span>
+        </div>
       </div>
 
       <!-- Controls -->
-      <div class="px-4 pb-3 flex items-center justify-center gap-6">
+      <div class="px-4 pb-3 flex items-center justify-center gap-3">
         <button
-          @click="prevTrack"
-          class="text-sims2-sky/60 hover:text-sims2-cream transition-colors"
-          title="Previous"
+          @click="skip(-15)"
+          class="text-sims2-sky/60 hover:text-sims2-cream transition-colors flex flex-col items-center"
+          title="Back 15s"
         >
-          <SkipBack :size="16" />
+          <RotateCcw :size="16" />
+          <span class="text-[9px] mt-0.5">15</span>
         </button>
         <button
           @click="togglePlay"
@@ -57,11 +80,12 @@
           <Play v-else :size="18" />
         </button>
         <button
-          @click="nextTrack"
-          class="text-sims2-sky/60 hover:text-sims2-cream transition-colors"
-          title="Next"
+          @click="skip(15)"
+          class="text-sims2-sky/60 hover:text-sims2-cream transition-colors flex flex-col items-center"
+          title="Forward 15s"
         >
-          <SkipForward :size="16" />
+          <RotateCw :size="16" />
+          <span class="text-[9px] mt-0.5">15</span>
         </button>
       </div>
 
@@ -78,147 +102,93 @@
         />
         <Volume2 :size="12" class="text-sims2-sky/60" />
       </div>
-
-      <!-- Playlist toggle -->
-      <div class="border-t border-gray-200">
-        <button
-          @click="showPlaylist = !showPlaylist"
-          class="w-full px-4 py-2 text-xs text-sims2-sky hover:bg-gray-50 transition-colors flex items-center justify-between"
-        >
-          <span>Playlist ({{ tracks.length }} tracks)</span>
-          <span>{{ showPlaylist ? '▲' : '▼' }}</span>
-        </button>
-        <div v-if="showPlaylist" class="max-h-40 overflow-y-auto">
-          <button
-            v-for="(track, i) in tracks"
-            :key="track.id"
-            @click="playTrack(i)"
-            class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 transition-colors flex items-center gap-2"
-            :class="i === currentIndex ? 'bg-green-50 text-green-700' : 'text-sims2-cream/80'"
-          >
-            <span class="text-xs">{{ i === currentIndex && isPlaying ? '♫' : '♪' }}</span>
-            <span class="truncate">{{ track.title }}</span>
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 
-  <!-- Hidden YouTube iframe -->
-  <div class="hidden">
-    <div id="yt-player"></div>
-  </div>
+  <!-- Hidden audio element -->
+  <audio
+    ref="audioEl"
+    :src="audioSrc"
+    preload="metadata"
+    @timeupdate="onTimeUpdate"
+    @loadedmetadata="onLoadedMetadata"
+    @ended="onEnded"
+    @play="isPlaying = true"
+    @pause="isPlaying = false"
+  />
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { Music, X, SkipBack, SkipForward, Play, Pause, Volume1, Volume2 } from 'lucide-vue-next'
+import { Music, X, RotateCcw, RotateCw, Play, Pause, Volume1, Volume2 } from 'lucide-vue-next'
 
 const expanded = ref(false)
 const isPlaying = ref(false)
-const showPlaylist = ref(false)
 const volume = ref(30)
-const currentIndex = ref(0)
+const currentTime = ref(0)
+const duration = ref(0)
+const progressPercent = ref(0)
 
-let player = null
-let apiReady = false
+const audioEl = ref(null)
+const progressBar = ref(null)
 
-// Curated Sims soundtrack — YouTube video IDs
-const tracks = [
-  { id: 'XR9-y4u9mew', title: 'Neighborhood 1', game: 'The Sims 2' },
-  { id: 'AoVfbGjHMHg', title: 'Neighborhood 2', game: 'The Sims 2' },
-  { id: 'XO4GfI3RVQY', title: 'Neighborhood 3', game: 'The Sims 2' },
-  { id: 'VVefPkm36Nk', title: 'Build Mode 1', game: 'The Sims 2' },
-  { id: 'mxHo0MbtkUE', title: 'Build Mode 2', game: 'The Sims 2' },
-  { id: '7TjIxQnAkvE', title: 'Buy Mode 1', game: 'The Sims 2' },
-  { id: 'IadnwIJQOlk', title: 'Buy Mode 2', game: 'The Sims 2' },
-  { id: '5tFj0JEb8NI', title: 'CAS Theme', game: 'The Sims 2' },
-  { id: 'cepJB2mELBM', title: 'Main Theme', game: 'The Sims 4' },
-  { id: 'iSVR1j3OjPk', title: 'Build Mode', game: 'The Sims 4' }
-]
+const audioSrc = '/sims-music.mp3'
 
-const currentTrack = ref(tracks[0])
-
-function loadYouTubeAPI() {
-  if (window.YT && window.YT.Player) {
-    apiReady = true
-    createPlayer()
-    return
+function formatTime(seconds) {
+  const s = Math.floor(seconds)
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const sec = s % 60
+  if (h > 0) {
+    return `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
   }
+  return `${m}:${String(sec).padStart(2, '0')}`
+}
 
-  const tag = document.createElement('script')
-  tag.src = 'https://www.youtube.com/iframe_api'
-  document.head.appendChild(tag)
-
-  window.onYouTubeIframeAPIReady = () => {
-    apiReady = true
-    createPlayer()
+function onTimeUpdate() {
+  if (!audioEl.value) return
+  currentTime.value = audioEl.value.currentTime
+  if (duration.value > 0) {
+    progressPercent.value = (currentTime.value / duration.value) * 100
   }
 }
 
-function createPlayer() {
-  player = new window.YT.Player('yt-player', {
-    height: '0',
-    width: '0',
-    videoId: tracks[currentIndex.value].id,
-    playerVars: {
-      autoplay: 0,
-      controls: 0,
-      disablekb: 1,
-      fs: 0,
-      modestbranding: 1
-    },
-    events: {
-      onReady: onPlayerReady,
-      onStateChange: onPlayerStateChange
-    }
-  })
+function onLoadedMetadata() {
+  if (!audioEl.value) return
+  duration.value = audioEl.value.duration
 }
 
-function onPlayerReady() {
-  player.setVolume(volume.value)
-}
-
-function onPlayerStateChange(event) {
-  // YT.PlayerState.ENDED === 0
-  if (event.data === 0) {
-    nextTrack()
-  }
-  // YT.PlayerState.PLAYING === 1
-  isPlaying.value = event.data === 1
+function onEnded() {
+  isPlaying.value = false
+  currentTime.value = 0
+  progressPercent.value = 0
 }
 
 function togglePlay() {
-  if (!player) return
+  if (!audioEl.value) return
   if (isPlaying.value) {
-    player.pauseVideo()
+    audioEl.value.pause()
   } else {
-    player.playVideo()
+    audioEl.value.play()
   }
 }
 
-function playTrack(index) {
-  currentIndex.value = index
-  currentTrack.value = tracks[index]
-  if (player && player.loadVideoById) {
-    player.loadVideoById(tracks[index].id)
-    isPlaying.value = true
-  }
+function skip(seconds) {
+  if (!audioEl.value) return
+  const newTime = audioEl.value.currentTime + seconds
+  audioEl.value.currentTime = Math.max(0, Math.min(newTime, duration.value))
 }
 
-function nextTrack() {
-  const next = (currentIndex.value + 1) % tracks.length
-  playTrack(next)
-}
-
-function prevTrack() {
-  const prev = (currentIndex.value - 1 + tracks.length) % tracks.length
-  playTrack(prev)
+function seekTo(event) {
+  if (!progressBar.value || !audioEl.value) return
+  const rect = progressBar.value.getBoundingClientRect()
+  const percent = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width))
+  audioEl.value.currentTime = percent * duration.value
 }
 
 function setVolume() {
-  if (player && player.setVolume) {
-    player.setVolume(volume.value)
+  if (audioEl.value) {
+    audioEl.value.volume = volume.value / 100
   }
 }
 
@@ -230,12 +200,9 @@ watch(volume, (v) => {
 onMounted(() => {
   const saved = localStorage.getItem('simaja_music_volume')
   if (saved) volume.value = Number(saved)
-  loadYouTubeAPI()
-})
-
-onUnmounted(() => {
-  if (player && player.destroy) {
-    player.destroy()
+  // Apply initial volume once audio element is ready
+  if (audioEl.value) {
+    audioEl.value.volume = volume.value / 100
   }
 })
 </script>

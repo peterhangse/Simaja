@@ -38,6 +38,13 @@
         >
           <GitBranch :size="16" /> <span class="hidden sm:inline">Tree</span>
         </router-link>
+        <router-link 
+          to="/floor-plan" 
+          class="nav-link"
+          :class="{ 'nav-link-active': $route.path === '/floor-plan' }"
+        >
+          <LayoutGrid :size="16" /> <span class="hidden sm:inline">Floor Plan</span>
+        </router-link>
         <button 
           @click="logout"
           class="ml-1 px-3 py-2 text-white/80 hover:text-red-200 hover:bg-white/15 rounded-lg transition-colors"
@@ -55,7 +62,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import PlumbobIcon from '@/components/icons/PlumbobIcon.vue'
 import ProfilePicker from '@/components/ProfilePicker.vue'
-import { Home, Globe, Users, GitBranch, LogOut } from 'lucide-vue-next'
+import { Home, Globe, Users, GitBranch, LayoutGrid, LogOut } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()

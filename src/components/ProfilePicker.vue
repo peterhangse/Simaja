@@ -128,11 +128,20 @@ async function selectProfile(id) {
 async function createProfile() {
   const name = newName.value.trim()
   if (!name) return
-  const profile = await simsStore.addProfile(name)
-  newName.value = ''
-  creating.value = false
-  await simsStore.switchProfile(profile.id)
-  open.value = false
+  try {
+    const profile = await simsStore.addProfile(name)
+    if (!profile) {
+      console.error('addProfile returned nothing')
+      return
+    }
+    newName.value = ''
+    creating.value = false
+    await simsStore.switchProfile(profile.id)
+    open.value = false
+  } catch (err) {
+    console.error('Failed to create save file:', err)
+    alert('Could not create save file: ' + (err.message || 'Unknown error'))
+  }
 }
 
 function confirmDelete(profile) {

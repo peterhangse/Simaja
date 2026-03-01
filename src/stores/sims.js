@@ -434,14 +434,18 @@ export const useSimsStore = defineStore('sims', () => {
 
   async function addProfile(name) {
     try {
-      const docRef = await addDoc(collection(db, 'profiles'), {
+      const data = {
         name,
         createdAt: new Date().toISOString()
-      })
-      const newProfile = { id: docRef.id, name }
+      }
+      console.log('Creating profile:', data)
+      const docRef = await addDoc(collection(db, 'profiles'), data)
+      console.log('Profile created with ID:', docRef.id)
+      const newProfile = { id: docRef.id, name, createdAt: data.createdAt }
       profiles.value.push(newProfile)
       return newProfile
     } catch (err) {
+      console.error('addProfile error:', err)
       error.value = err.message
       throw err
     }
