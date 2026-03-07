@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'
+import { auth } from '@/services/firebase'
 
 export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false)
@@ -12,58 +14,35 @@ export const useAuthStore = defineStore('auth', () => {
     const savedSession = localStorage.getItem('simaja_session')
     const savedOnboarding = localStorage.getItem('simaja_onboarding')
     const savedUserName = localStorage.getItem('simaja_username')
-    
+
     if (savedSession) {
       sessionToken.value = savedSession
       isAuthenticated.value = true
-      
+
       if (savedOnboarding === 'true') {
         hasCompletedOnboarding.value = true
       }
-      
+
       if (savedUserName) {
         userName.value = savedUserName
       }
-      
+
       return true
     }
     return false
   }
 
-  // Verify password against environment variable (via API)
-  async function login(password) {
+  // Verify password using Firebase Authentication
+  async function login(email, password) {
     try {
-      // For local development, check against the configured password
-      // In production, this would be a Firebase Function call
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        sessionToken.value = data.token
-        isAuthenticated.value = true
-        localStorage.setItem('simaja_session', data.token)
-        return { success: true }
-      }
-      
-      return { success: false, error: 'Wrong password' }
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      sessionToken.value = await userCredential.user.getIdToken()
+      isAuthenticated.value = true
+      localStorage.setItem('simaja_session', sessionToken.value)
+      return { success: true }
     } catch (error) {
-      // Fallback for development without backend
-      // This will be replaced by actual auth in production
-      const correctPassword = import.meta.env.VITE_APP_PASSWORD || 'maja'
-      
-      if (password === correctPassword) {
-        const token = btoa(Date.now().toString())
-        sessionToken.value = token
-        isAuthenticated.value = true
-        localStorage.setItem('simaja_session', token)
-        return { success: true }
-      }
-      
-      return { success: false, error: 'Wrong password' }
+      console.error(error)
+      return { success: false, error: 'Invalid email or password' }
     }
   }
 
@@ -74,7 +53,8 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('simaja_username', name)
   }
 
-  function logout() {
+  async function logout() {
+    await signOut(auth)
     isAuthenticated.value = false
     sessionToken.value = null
     userName.value = ''

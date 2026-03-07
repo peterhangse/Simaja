@@ -1,12 +1,17 @@
 /**
- * Procedural Floor Plan Generator
+ * Procedural Floor Plan Generator — Multi-Floor Edition
+ *
  * Uses Binary Space Partitioning (BSP) to create non-overlapping room layouts.
+ * Supports multi-floor generation with staircase stacking, floor zoning,
+ * adjacency scoring, forbidden-pair validation, and annotation generation.
  */
 
 import {
   LOT_SIZES, STYLES, BUDGETS,
   HOUSE_NAMES, BUILD_TIPS,
-  EXTRA_TO_ROOM, FEATURE_TO_ROOM, ADJACENCY
+  EXTRA_TO_ROOM, FEATURE_TO_ROOM,
+  ADJACENCY, FLOOR_ZONES, FORBIDDEN_ADJACENCIES,
+  ANNOTATION_TEMPLATES
 } from '@/data/floorPlanData'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -68,49 +73,31 @@ function bspSplit(rect, minW, minH, maxDepth, depth = 0) {
   }
 }
 
-// ─── Room Assignment ──────────────────────────────────────────────────────────
+// ─── Room Lists per Floor ─────────────────────────────────────────────────────
 
 /**
- * Build the list of required rooms from form configuration.
+ * Build the list of required rooms for a GROUND floor.
  */
-function buildRoomList(config) {
+function buildGroundFloorRooms(config, hasUpperFloors) {
   const rooms = []
 
-  // Always have an entry
   rooms.push({ type: 'Entry', priority: 10, minArea: 6, prefFront: true })
 
-  // Open plan or separate kitchen/living
   if (config.features.includes('openplan')) {
     rooms.push({ type: 'Open Kitchen/Living', priority: 9, minArea: 24, prefFront: false })
   } else {
-    rooms.push({ type: 'Living Room', priority: 9, minArea: 16, prefFront: false })
-    rooms.push({ type: 'Kitchen', priority: 8, minArea: 9, prefFront: false })
+    rooms.push({ type: 'Living Room', priority: 9, minArea: 20, prefFront: false })
+    rooms.push({ type: 'Kitchen', priority: 8, minArea: 12, prefFront: false })
   }
 
-  // Hallway to connect things
   rooms.push({ type: 'Hallway', priority: 7, minArea: 6, prefFront: false })
 
-  // Master bedroom
-  rooms.push({ type: 'Master Bedroom', priority: 8, minArea: 12, prefFront: false })
-
-  // Extra bedrooms
-  for (let i = 1; i < config.bedrooms; i++) {
-    rooms.push({ type: 'Bedroom', priority: 6, minArea: 9, prefFront: false })
+  if (hasUpperFloors) {
+    rooms.push({ type: 'Staircase', priority: 8, minArea: 6, prefFront: false })
   }
 
-  // Master bathroom (ensuite or not)
-  if (config.features.includes('ensuite')) {
-    rooms.push({ type: 'Master Bathroom', priority: 7, minArea: 6, prefFront: false })
-  }
-
-  // Regular bathrooms
-  for (let i = 0; i < config.bathrooms; i++) {
-    rooms.push({ type: 'Bathroom', priority: 5, minArea: 6, prefFront: false })
-  }
-
-  // Feature-based rooms
   if (config.features.includes('dining')) {
-    rooms.push({ type: 'Dining Room', priority: 6, minArea: 9, prefFront: false })
+    rooms.push({ type: 'Dining Room', priority: 6, minArea: 12, prefFront: false })
   }
   if (config.features.includes('laundry')) {
     rooms.push({ type: 'Laundry', priority: 3, minArea: 4, prefFront: false })
@@ -119,11 +106,24 @@ function buildRoomList(config) {
     rooms.push({ type: 'Mudroom', priority: 4, minArea: 4, prefFront: true })
   }
 
-  // Extra-based rooms (indoor ones)
-  const indoorExtras = { office: 'Office', gym: 'Gym', library: 'Library', studio: 'Art Studio', basement: 'Basement' }
-  for (const [key, roomType] of Object.entries(indoorExtras)) {
-    if (config.extras.includes(key)) {
-      rooms.push({ type: roomType, priority: 3, minArea: 9, prefFront: false })
+  rooms.push({ type: 'Bathroom', priority: 5, minArea: 6, prefFront: false })
+
+  if (!hasUpperFloors) {
+    rooms.push({ type: 'Master Bedroom', priority: 8, minArea: 16, prefFront: false })
+    for (let i = 1; i < config.bedrooms; i++) {
+      rooms.push({ type: 'Bedroom', priority: 6, minArea: 12, prefFront: false })
+    }
+    if (config.features.includes('ensuite')) {
+      rooms.push({ type: 'Master Bathroom', priority: 7, minArea: 8, prefFront: false })
+    }
+    for (let i = 1; i < config.bathrooms; i++) {
+      rooms.push({ type: 'Bathroom', priority: 5, minArea: 6, prefFront: false })
+    }
+    const indoorExtras = { office: 'Office', gym: 'Gym', library: 'Library', studio: 'Art Studio' }
+    for (const [key, roomType] of Object.entries(indoorExtras)) {
+      if (config.extras.includes(key)) {
+        rooms.push({ type: roomType, priority: 3, minArea: 9, prefFront: false })
+      }
     }
   }
 
@@ -131,9 +131,84 @@ function buildRoomList(config) {
 }
 
 /**
- * Score how well a room type fits in a particular slot,
- * considering adjacency to already-placed rooms.
+ * Build the list of required rooms for an UPPER floor.
  */
+function buildUpperFloorRooms(config, floorNum, totalFloors) {
+  const rooms = []
+
+  rooms.push({ type: 'Staircase', priority: 10, minArea: 6, prefFront: false })
+  rooms.push({ type: 'Hallway', priority: 9, minArea: 6, prefFront: false })
+
+  const upperFloorCount = totalFloors - 1
+  const isFirstUpper = floorNum === 2
+
+  if (isFirstUpper) {
+    rooms.push({ type: 'Master Bedroom', priority: 8, minArea: 16, prefFront: false })
+    if (config.features.includes('ensuite')) {
+      rooms.push({ type: 'Master Bathroom', priority: 7, minArea: 8, prefFront: false })
+    }
+    rooms.push({ type: 'Closet', priority: 3, minArea: 4, prefFront: false })
+
+    const bedroomsForThisFloor = upperFloorCount === 1
+      ? config.bedrooms - 1
+      : Math.ceil((config.bedrooms - 1) / 2)
+    for (let i = 0; i < bedroomsForThisFloor; i++) {
+      rooms.push({ type: 'Bedroom', priority: 6, minArea: 12, prefFront: false })
+    }
+
+    const bathsForThisFloor = upperFloorCount === 1
+      ? Math.max(1, config.bathrooms - 1)
+      : Math.ceil(config.bathrooms / 2)
+    for (let i = 0; i < bathsForThisFloor; i++) {
+      rooms.push({ type: 'Bathroom', priority: 5, minArea: 6, prefFront: false })
+    }
+
+    if (config.extras.includes('office')) {
+      rooms.push({ type: 'Office', priority: 3, minArea: 9, prefFront: false })
+    }
+  } else {
+    const bedroomsRemaining = Math.max(0, config.bedrooms - 1 - Math.ceil((config.bedrooms - 1) / 2))
+    for (let i = 0; i < bedroomsRemaining; i++) {
+      rooms.push({ type: 'Bedroom', priority: 6, minArea: 12, prefFront: false })
+    }
+
+    const bathsRemaining = Math.max(1, config.bathrooms - Math.ceil(config.bathrooms / 2))
+    for (let i = 0; i < bathsRemaining; i++) {
+      rooms.push({ type: 'Bathroom', priority: 5, minArea: 6, prefFront: false })
+    }
+
+    const specials = { library: 'Library', gym: 'Gym', studio: 'Art Studio' }
+    for (const [key, roomType] of Object.entries(specials)) {
+      if (config.extras.includes(key)) {
+        rooms.push({ type: roomType, priority: 3, minArea: 9, prefFront: false })
+      }
+    }
+  }
+
+  if (config.features.includes('balcony')) {
+    rooms.push({ type: 'Balcony', priority: 2, minArea: 6, prefFront: false })
+  }
+
+  return rooms.sort((a, b) => b.priority - a.priority)
+}
+
+// ─── Room Assignment ──────────────────────────────────────────────────────────
+
+function isAdjacent(a, b) {
+  const aw = a.w || a.width
+  const ah = a.h || a.height
+  const bw = b.w || b.width
+  const bh = b.h || b.height
+
+  const overlapX = Math.min(a.x + aw, b.x + bw) - Math.max(a.x, b.x)
+  const overlapY = Math.min(a.y + ah, b.y + bh) - Math.max(a.y, b.y)
+
+  if ((a.x + aw === b.x || b.x + bw === a.x) && overlapY > 0) return true
+  if ((a.y + ah === b.y || b.y + bh === a.y) && overlapX > 0) return true
+
+  return false
+}
+
 function adjacencyScore(roomType, slot, placedRooms) {
   let score = 0
   const prefs = ADJACENCY[roomType] || {}
@@ -141,10 +216,7 @@ function adjacencyScore(roomType, slot, placedRooms) {
   for (const placed of placedRooms) {
     const prefScore = prefs[placed.name] || 0
     if (prefScore === 0) continue
-
-    // Check if slots are adjacent (share an edge)
-    const adjacent = isAdjacent(slot, placed)
-    if (adjacent) {
+    if (isAdjacent(slot, placed)) {
       score += prefScore
     }
   }
@@ -152,16 +224,18 @@ function adjacencyScore(roomType, slot, placedRooms) {
   return score
 }
 
-function isAdjacent(a, b) {
-  // Two rects are adjacent if they share at least a 1-tile edge
-  const overlapX = Math.min(a.x + a.w, b.x + b.width) - Math.max(a.x, b.x)
-  const overlapY = Math.min(a.y + a.h, b.y + b.height) - Math.max(a.y, b.y)
-
-  // Horizontally adjacent (share vertical edge)
-  if ((a.x + a.w === b.x || b.x + b.width === a.x) && overlapY > 0) return true
-  // Vertically adjacent (share horizontal edge)
-  if ((a.y + a.h === b.y || b.y + b.height === a.y) && overlapX > 0) return true
-
+/**
+ * Check if assigning roomType to a slot would create a forbidden adjacency.
+ */
+function hasForbiddenAdjacency(roomType, slot, placedRooms) {
+  for (const placed of placedRooms) {
+    if (!isAdjacent(slot, placed)) continue
+    for (const [a, b] of FORBIDDEN_ADJACENCIES) {
+      if ((roomType === a && placed.name === b) || (roomType === b && placed.name === a)) {
+        return true
+      }
+    }
+  }
   return false
 }
 
@@ -182,31 +256,29 @@ function assignRooms(slots, roomList) {
       const slot = availableSlots[i]
       const area = slot.w * slot.h
 
-      // Skip slots that are way too small
       if (area < room.minArea * 0.6) continue
 
       let score = 0
 
-      // Prefer front slots for entry/mudroom
       if (room.prefFront) {
         score += (1 - slot.y / 100) * 10
       }
 
-      // Size fitness — prefer slots close to the ideal size
       const idealArea = room.minArea * 1.8
       score -= Math.abs(area - idealArea) * 0.3
 
-      // Adjacency bonus
       score += adjacencyScore(room.type, slot, assigned) * 3
 
-      // Larger rooms (Living Room, Master Bedroom) get bigger slots
       if (room.minArea >= 12) {
         score += area * 0.2
       }
 
-      // Small utility rooms (Bathroom, Laundry, Closet) prefer smaller slots
       if (room.minArea <= 6) {
         score -= area * 0.15
+      }
+
+      if (hasForbiddenAdjacency(room.type, slot, assigned)) {
+        score -= 50
       }
 
       if (score > bestScore) {
@@ -234,7 +306,6 @@ function addOutdoorRooms(rooms, lotW, lotH, houseRect, extras) {
   const outdoor = []
 
   if (extras.includes('garden')) {
-    // Garden strip at the back
     const gardenH = Math.max(2, lotH - (houseRect.y + houseRect.h))
     if (gardenH >= 2) {
       outdoor.push({
@@ -242,46 +313,31 @@ function addOutdoorRooms(rooms, lotW, lotH, houseRect, extras) {
         x: 1,
         y: houseRect.y + houseRect.h,
         width: lotW - 2,
-        height: gardenH - 1
+        height: Math.min(gardenH - 1, 8)
       })
     }
   }
 
   if (extras.includes('pool')) {
-    // Pool to the side or back
     const poolW = Math.min(6, Math.floor(lotW * 0.2))
     const poolH = Math.min(8, Math.floor(lotH * 0.25))
     const poolX = houseRect.x + houseRect.w + 1
     const poolY = Math.max(2, houseRect.y + Math.floor(houseRect.h * 0.3))
 
     if (poolX + poolW <= lotW - 1 && poolY + poolH <= lotH - 1) {
-      outdoor.push({
-        name: 'Pool',
-        x: poolX,
-        y: poolY,
-        width: poolW,
-        height: poolH
-      })
+      outdoor.push({ name: 'Pool', x: poolX, y: poolY, width: poolW, height: poolH })
     } else {
-      // Try below the house
       const byX = houseRect.x + Math.floor(houseRect.w * 0.3)
       const byY = houseRect.y + houseRect.h + 1
       if (byY + poolH <= lotH - 1) {
-        outdoor.push({
-          name: 'Pool',
-          x: byX,
-          y: byY,
-          width: poolW,
-          height: poolH
-        })
+        outdoor.push({ name: 'Pool', x: byX, y: byY, width: poolW, height: poolH })
       }
     }
   }
 
   if (extras.includes('garage')) {
-    // Garage attached to the side
-    const garageW = Math.min(5, Math.floor(lotW * 0.15))
-    const garageH = Math.min(5, Math.floor(lotH * 0.15))
+    const garageW = Math.min(6, Math.floor(lotW * 0.18))
+    const garageH = Math.min(7, Math.floor(lotH * 0.2))
     const gx = houseRect.x - garageW - 1
     if (gx >= 1) {
       outdoor.push({
@@ -297,6 +353,50 @@ function addOutdoorRooms(rooms, lotW, lotH, houseRect, extras) {
   return outdoor
 }
 
+// ─── Annotations ──────────────────────────────────────────────────────────────
+
+/**
+ * Generate 3-5 annotations for a set of rooms by picking from templates.
+ */
+function generateAnnotations(rooms) {
+  const annotations = []
+  const shuffledRooms = shuffle(rooms)
+
+  for (const room of shuffledRooms) {
+    if (annotations.length >= 5) break
+
+    const templates = ANNOTATION_TEMPLATES[room.name]
+    if (!templates || templates.length === 0) continue
+
+    if (annotations.some(a => a.roomName === room.name)) continue
+
+    const template = pick(templates)
+    annotations.push({
+      roomName: room.name,
+      category: template.category,
+      note: template.note
+    })
+  }
+
+  // Ensure at least 3
+  if (annotations.length < 3) {
+    for (const room of shuffledRooms) {
+      if (annotations.length >= 3) break
+      const templates = ANNOTATION_TEMPLATES[room.name]
+      if (!templates) continue
+      if (annotations.some(a => a.roomName === room.name)) continue
+      const template = pick(templates)
+      annotations.push({
+        roomName: room.name,
+        category: template.category,
+        note: template.note
+      })
+    }
+  }
+
+  return annotations
+}
+
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
 function generateTitle(style) {
@@ -304,20 +404,20 @@ function generateTitle(style) {
   return pick(names)
 }
 
-function generateCost(rooms, budget) {
+function generateCost(allRooms, budget) {
   const budgetInfo = BUDGETS.find(b => b.id === budget)
   if (!budgetInfo) return '§50,000'
 
-  const totalArea = rooms.reduce((sum, r) => sum + r.width * r.height, 0)
+  const totalArea = allRooms.reduce((sum, r) => sum + r.width * r.height, 0)
   const costPerTile = rand(budgetInfo.min, budgetInfo.max) / Math.max(totalArea, 1)
   const totalCost = Math.round(totalArea * costPerTile / 1000) * 1000
 
   return `§${totalCost.toLocaleString('en-US')}`
 }
 
-function generateKeyFeatures(config, rooms) {
+function generateKeyFeatures(config, allRooms) {
   const features = []
-  const roomNames = rooms.map(r => r.name)
+  const roomNames = allRooms.map(r => r.name)
 
   if (roomNames.includes('Open Kitchen/Living')) features.push('Open Plan Living')
   if (roomNames.includes('Master Bathroom')) features.push('Ensuite Master Bath')
@@ -327,6 +427,7 @@ function generateKeyFeatures(config, rooms) {
   if (roomNames.includes('Office')) features.push('Home Office')
   if (roomNames.includes('Library')) features.push('Private Library')
   if (roomNames.includes('Gym')) features.push('Home Gym')
+  if (roomNames.includes('Staircase')) features.push('Multi-Floor Layout')
 
   const bedroomCount = roomNames.filter(n => n === 'Bedroom' || n === 'Master Bedroom').length
   const bathCount = roomNames.filter(n => n === 'Bathroom' || n === 'Master Bathroom').length
@@ -338,46 +439,32 @@ function generateKeyFeatures(config, rooms) {
   return features.slice(0, 5)
 }
 
-// ─── Main Generator ───────────────────────────────────────────────────────────
+// ─── Floor Generation ─────────────────────────────────────────────────────────
 
 /**
- * Generate a complete floor plan from form data.
- * Returns the same JSON shape the AI prompt would have produced.
+ * Generate rooms for a single floor using BSP.
  */
-export function generateFloorPlan(config) {
-  const lotInfo = LOT_SIZES.find(l => l.label === config.lotSize) || LOT_SIZES[3]
-  const lotW = lotInfo.w
-  const lotH = lotInfo.h
-
-  // 1. Define house footprint (inset from lot edges)
-  const margin = lotW >= 40 ? 3 : 2
-  const footprintRatio = 0.55 + Math.random() * 0.15 // 55-70%
-  const houseW = Math.floor((lotW - margin * 2) * Math.sqrt(footprintRatio))
-  const houseH = Math.floor((lotH - margin * 2) * Math.sqrt(footprintRatio))
-  const houseX = Math.floor((lotW - houseW) / 2)
-  const houseY = margin
-
-  const houseRect = { x: houseX, y: houseY, w: houseW, h: houseH }
-
-  // 2. Determine how many rooms we need
-  const roomList = buildRoomList(config)
+function generateFloor(footprint, roomList, staircaseSlot) {
   const targetRooms = roomList.length
-
-  // 3. BSP split the house footprint
   const minRoomW = 3
   const minRoomH = 3
-  // Adjust max depth to get approximately the right number of rooms
   const maxDepth = Math.max(3, Math.min(6, Math.ceil(Math.log2(targetRooms)) + 1))
-  let slots = bspSplit(houseRect, minRoomW, minRoomH, maxDepth)
 
-  // If we got too few slots, try again with higher depth
-  if (slots.length < targetRooms * 0.7) {
-    slots = bspSplit(houseRect, minRoomW, minRoomH, maxDepth + 1)
+  let slots
+
+  if (staircaseSlot) {
+    const remainingSlots = splitAroundReserved(footprint, staircaseSlot, minRoomW, minRoomH, maxDepth)
+    slots = [{ ...staircaseSlot }, ...remainingSlots]
+  } else {
+    slots = bspSplit(footprint, minRoomW, minRoomH, maxDepth)
+
+    if (slots.length < targetRooms * 0.7) {
+      slots = bspSplit(footprint, minRoomW, minRoomH, maxDepth + 1)
+    }
   }
 
-  // If too many slots, merge some adjacent small ones
+  // Merge excess small slots
   while (slots.length > targetRooms + 2 && slots.length > 3) {
-    // Find the smallest slot and merge with an adjacent one
     let smallestIdx = 0
     let smallestArea = Infinity
     for (let i = 0; i < slots.length; i++) {
@@ -395,66 +482,194 @@ export function generateFloorPlan(config) {
       if (j === smallestIdx) continue
       const other = slots[j]
 
-      // Can merge horizontally (same y and h, adjacent x)
       if (small.y === other.y && small.h === other.h) {
         if (small.x + small.w === other.x) {
-          other.x = small.x
-          other.w += small.w
-          slots.splice(smallestIdx, 1)
-          merged = true
-          break
+          other.x = small.x; other.w += small.w
+          slots.splice(smallestIdx, 1); merged = true; break
         }
         if (other.x + other.w === small.x) {
           other.w += small.w
-          slots.splice(smallestIdx, 1)
-          merged = true
-          break
+          slots.splice(smallestIdx, 1); merged = true; break
         }
       }
-      // Can merge vertically (same x and w, adjacent y)
       if (small.x === other.x && small.w === other.w) {
         if (small.y + small.h === other.y) {
-          other.y = small.y
-          other.h += small.h
-          slots.splice(smallestIdx, 1)
-          merged = true
-          break
+          other.y = small.y; other.h += small.h
+          slots.splice(smallestIdx, 1); merged = true; break
         }
         if (other.y + other.h === small.y) {
           other.h += small.h
-          slots.splice(smallestIdx, 1)
-          merged = true
-          break
+          slots.splice(smallestIdx, 1); merged = true; break
         }
       }
     }
 
-    if (!merged) break // Can't merge any more — stop
+    if (!merged) break
   }
 
-  // 4. Assign room types to slots
-  const indoorRooms = assignRooms(slots, roomList)
+  // Assign rooms — if staircase reserved, handle it first
+  let assignedRooms
+  if (staircaseSlot) {
+    const otherRooms = roomList.filter(r => r.type !== 'Staircase')
+    const otherSlots = slots.filter(s =>
+      !(s.x === staircaseSlot.x && s.y === staircaseSlot.y &&
+        s.w === staircaseSlot.w && s.h === staircaseSlot.h)
+    )
 
-  // 5. Add outdoor rooms
-  const outdoorRooms = addOutdoorRooms(indoorRooms, lotW, lotH, houseRect, config.extras)
-  const allRooms = [...indoorRooms, ...outdoorRooms]
+    const stairRoom = {
+      name: 'Staircase',
+      x: staircaseSlot.x,
+      y: staircaseSlot.y,
+      width: staircaseSlot.w,
+      height: staircaseSlot.h
+    }
+
+    assignedRooms = [stairRoom, ...assignRooms(otherSlots, otherRooms)]
+  } else {
+    assignedRooms = assignRooms(slots, roomList)
+  }
+
+  const stairRoom = assignedRooms.find(r => r.name === 'Staircase')
+  const newStaircaseSlot = stairRoom
+    ? { x: stairRoom.x, y: stairRoom.y, w: stairRoom.width, h: stairRoom.height }
+    : null
+
+  return { rooms: assignedRooms, staircaseSlot: newStaircaseSlot }
+}
+
+/**
+ * Split a footprint around a reserved slot into BSP-able rectangles.
+ */
+function splitAroundReserved(foot, reserved, minW, minH, maxDepth) {
+  const rects = []
+
+  if (reserved.x > foot.x) {
+    const w = reserved.x - foot.x
+    if (w >= minW) rects.push({ x: foot.x, y: foot.y, w, h: foot.h })
+  }
+
+  const rightX = reserved.x + reserved.w
+  if (rightX < foot.x + foot.w) {
+    const w = foot.x + foot.w - rightX
+    if (w >= minW) rects.push({ x: rightX, y: foot.y, w, h: foot.h })
+  }
+
+  if (reserved.y > foot.y) {
+    const h = reserved.y - foot.y
+    if (h >= minH) rects.push({ x: reserved.x, y: foot.y, w: reserved.w, h })
+  }
+
+  const bottomY = reserved.y + reserved.h
+  if (bottomY < foot.y + foot.h) {
+    const h = foot.y + foot.h - bottomY
+    if (h >= minH) rects.push({ x: reserved.x, y: bottomY, w: reserved.w, h })
+  }
+
+  const allSlots = []
+  for (const rect of rects) {
+    const subDepth = Math.max(2, maxDepth - 1)
+    allSlots.push(...bspSplit(rect, minW, minH, subDepth))
+  }
+
+  return allSlots
+}
+
+// ─── Main Generator ───────────────────────────────────────────────────────────
+
+/**
+ * Generate a complete multi-floor plan from form data.
+ */
+export function generateFloorPlan(config) {
+  const lotInfo = LOT_SIZES.find(l => l.label === config.lotSize) || LOT_SIZES[3]
+  const lotW = lotInfo.w
+  const lotH = lotInfo.h
+  const numFloors = config.floors || 1
+  const hasUpperFloors = numFloors > 1
+
+  // 1. Define ground floor house footprint
+  const margin = lotW >= 40 ? 3 : 2
+  const footprintRatio = 0.55 + Math.random() * 0.15
+  const houseW = Math.floor((lotW - margin * 2) * Math.sqrt(footprintRatio))
+  const houseH = Math.floor((lotH - margin * 2) * Math.sqrt(footprintRatio))
+  const houseX = Math.floor((lotW - houseW) / 2)
+  const houseY = margin
+
+  const groundFootprint = { x: houseX, y: houseY, w: houseW, h: houseH }
+
+  // 2. Generate ground floor
+  const groundRoomList = buildGroundFloorRooms(config, hasUpperFloors)
+  const groundResult = generateFloor(groundFootprint, groundRoomList, null)
+
+  // 3. Add outdoor rooms to ground floor
+  const outdoorRooms = addOutdoorRooms(groundResult.rooms, lotW, lotH, groundFootprint, config.extras)
+  const groundRooms = [...groundResult.rooms, ...outdoorRooms]
+  const groundAnnotations = generateAnnotations(groundRooms)
+
+  const floorPlans = [{
+    floor: 1,
+    label: 'Ground Floor',
+    rooms: groundRooms,
+    annotations: groundAnnotations
+  }]
+
+  // 4. Generate upper floors
+  let currentStaircaseSlot = groundResult.staircaseSlot
+
+  for (let f = 2; f <= numFloors; f++) {
+    const shrink = 0.7 + Math.random() * 0.2
+    const upperW = Math.max(8, Math.floor(houseW * shrink))
+    const upperH = Math.max(8, Math.floor(houseH * shrink))
+    const upperX = houseX + Math.floor((houseW - upperW) / 2)
+    const upperY = houseY + Math.floor((houseH - upperH) / 2)
+
+    const upperFootprint = { x: upperX, y: upperY, w: upperW, h: upperH }
+    const upperRoomList = buildUpperFloorRooms(config, f, numFloors)
+
+    let stairSlot = currentStaircaseSlot
+    if (stairSlot) {
+      stairSlot = {
+        x: Math.max(upperX, Math.min(stairSlot.x, upperX + upperW - stairSlot.w)),
+        y: Math.max(upperY, Math.min(stairSlot.y, upperY + upperH - stairSlot.h)),
+        w: stairSlot.w,
+        h: stairSlot.h
+      }
+    }
+
+    const upperResult = generateFloor(upperFootprint, upperRoomList, stairSlot)
+    const upperAnnotations = generateAnnotations(upperResult.rooms)
+
+    const floorLabel = f === 2 ? 'Upper Floor' : f === 3 ? 'Top Floor' : `Floor ${f}`
+
+    floorPlans.push({
+      floor: f,
+      label: floorLabel,
+      rooms: upperResult.rooms,
+      annotations: upperAnnotations
+    })
+
+    currentStaircaseSlot = upperResult.staircaseSlot || stairSlot
+  }
+
+  // 5. Collect all rooms for metadata
+  const allRooms = floorPlans.flatMap(fp => fp.rooms)
 
   // 6. Generate metadata
   const title = generateTitle(config.style)
   const cost = generateCost(allRooms, config.budget)
   const keyFeatures = generateKeyFeatures(config, allRooms)
-  const buildTips = BUILD_TIPS[config.style] || BUILD_TIPS.contemporary
+  const buildTip = BUILD_TIPS[config.style] || BUILD_TIPS.contemporary
+  const styleLabel = STYLES.find(s => s.id === config.style)?.label || 'custom'
 
   return {
     title,
     style: config.style,
-    description: `A ${STYLES.find(s => s.id === config.style)?.label || 'custom'} home on a ${config.lotSize} lot, designed for a ${config.household} household. Features ${allRooms.length} rooms across the ground floor.`,
-    floors: config.floors,
+    description: `A ${styleLabel} home on a ${config.lotSize} lot, designed for a ${config.household} household. Features ${allRooms.length} rooms across ${numFloors} floor${numFloors > 1 ? 's' : ''}.`,
+    floors: numFloors,
     lotSize: config.lotSize,
     estimatedCost: cost,
     footprintTiles: `${houseW}×${houseH}`,
     keyFeatures,
-    buildTips,
-    rooms: allRooms
+    buildTip,
+    floorPlans
   }
 }

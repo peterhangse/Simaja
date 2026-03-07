@@ -30,6 +30,19 @@
 
       <form @submit.prevent="handleLogin" class="space-y-6">
         <div>
+          <label for="email" class="block text-sm font-medium text-sims2-sky mb-2">
+            Email
+          </label>
+          <input
+            id="email"
+            v-model="email"
+            type="email"
+            placeholder="Enter email..."
+            class="w-full px-4 py-3 rounded-xl bg-white border-2 border-gray-200 text-sims2-cream placeholder-gray-400 focus:border-emerald-400 outline-none text-lg transition-all"
+            :class="{ 'border-red-400 shake': showError }"
+          />
+        </div>
+        <div>
           <label for="password" class="block text-sm font-medium text-sims2-sky mb-2">
             Password
           </label>
@@ -75,15 +88,16 @@ import { Gamepad2 } from 'lucide-vue-next'
 const router = useRouter()
 const authStore = useAuthStore()
 
+const email = ref('')
 const password = ref('')
 const isLoading = ref(false)
 const showError = ref(false)
 const errorMessage = ref('')
 
 async function handleLogin() {
-  if (!password.value.trim()) {
+  if (!email.value.trim() || !password.value.trim()) {
     showError.value = true
-    errorMessage.value = 'Please enter a password'
+    errorMessage.value = 'Please enter both email and password'
     return
   }
 
@@ -91,7 +105,7 @@ async function handleLogin() {
   showError.value = false
 
   try {
-    const result = await authStore.login(password.value)
+    const result = await authStore.login(email.value, password.value)
     
     if (result.success) {
       if (authStore.hasCompletedOnboarding) {

@@ -150,7 +150,7 @@
                 <span class="text-xs text-sims2-sky">Footprint</span>
               </div>
               <div class="s2-panel-inner rounded-lg px-3 py-2 text-center">
-                <span class="block font-display font-bold text-emerald-700">{{ result.rooms?.length }}</span>
+                <span class="block font-display font-bold text-emerald-700">{{ totalRoomCount }}</span>
                 <span class="text-xs text-sims2-sky">Rooms</span>
               </div>
             </div>
@@ -166,22 +166,54 @@
             </div>
 
             <!-- Build tip -->
-            <div v-if="result.buildTips" class="bg-amber-50 rounded-xl px-4 py-3 mt-4 border-l-4 border-amber-400 text-sm text-amber-900 font-semibold">
-              💡 <strong>Build Tip:</strong> {{ result.buildTips }}
+            <div v-if="result.buildTip" class="bg-amber-50 rounded-xl px-4 py-3 mt-4 border-l-4 border-amber-400 text-sm text-amber-900 font-semibold">
+              💡 <strong>Build Tip:</strong> {{ result.buildTip }}
             </div>
           </div>
 
+          <!-- Floor switcher -->
+          <FloorSwitcher
+            v-if="result.floorPlans?.length > 1"
+            :floor-plans="result.floorPlans"
+            :active-floor="activeFloor"
+            @update:active-floor="activeFloor = $event"
+          />
+
           <!-- Floor plan SVG -->
           <div class="s2-panel p-4 mb-6">
-            <FloorPlanCanvas :rooms="result.rooms" :lot-w="lotInfo.w" :lot-h="lotInfo.h" />
+            <FloorPlanCanvas
+              :rooms="currentFloorData?.rooms || []"
+              :lot-w="lotInfo.w"
+              :lot-h="lotInfo.h"
+              :annotations="currentFloorData?.annotations || []"
+              :floor-number="activeFloor"
+            />
+          </div>
+
+          <!-- Annotation panel -->
+          <AnnotationPanel
+            v-if="currentFloorData?.annotations?.length"
+            :annotations="currentFloorData.annotations"
+          />
+
+          <!-- Door key bar -->
+          <div v-if="currentFloorData?.rooms?.length" class="s2-panel p-3 mb-6 flex items-center gap-4 text-xs font-bold text-sims2-sky">
+            <span class="flex items-center gap-1">
+              <svg width="16" height="8"><line x1="0" y1="4" x2="6" y2="4" stroke="#555" stroke-width="2" /><path d="M6 4 A4 4 0 0 1 14 4" fill="none" stroke="#777" stroke-width="0.8" stroke-dasharray="2,2" /></svg>
+              Door
+            </span>
+            <span class="flex items-center gap-1">
+              <span class="inline-block w-3 h-3 rounded-full bg-emerald-600 border border-white"></span>
+              Annotation pin
+            </span>
           </div>
 
           <!-- Legend -->
-          <div v-if="result.rooms?.length" class="s2-panel p-4 mb-6">
+          <div v-if="currentFloorData?.rooms?.length" class="s2-panel p-4 mb-6">
             <div class="text-xs font-bold text-sims2-sky uppercase tracking-wider mb-3">Room Legend</div>
             <div class="flex flex-wrap gap-2">
               <div
-                v-for="(room, i) in result.rooms" :key="i"
+                v-for="(room, i) in currentFloorData.rooms" :key="i"
                 class="flex items-center gap-1.5 text-xs font-bold text-sims2-cream"
               >
                 <div
@@ -213,6 +245,8 @@
 import { ref, reactive, computed } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import FloorPlanCanvas from '@/components/FloorPlanCanvas.vue'
+import FloorSwitcher from '@/components/FloorSwitcher.vue'
+import AnnotationPanel from '@/components/AnnotationPanel.vue'
 import { LayoutGrid } from 'lucide-vue-next'
 import { LOT_SIZES, STYLES, BUDGETS, HOUSEHOLD, EXTRAS, FEATURES, ROOM_STYLES, DEFAULT_ROOM_STYLE } from '@/data/floorPlanData'
 import { generateFloorPlan } from '@/utils/floorPlanGenerator'
@@ -224,6 +258,7 @@ const tabs = [
 
 const tab = ref('input')
 const result = ref(null)
+const activeFloor = ref(1)
 
 const form = reactive({
   lotSize: '30×20',
@@ -246,6 +281,14 @@ const styleIcon = computed(() =>
   STYLES.find(s => s.id === result.value?.style)?.icon || '🏠'
 )
 
+const currentFloorData = computed(() =>
+  result.value?.floorPlans?.find(fp => fp.floor === activeFloor.value) || null
+)
+
+const totalRoomCount = computed(() =>
+  result.value?.floorPlans?.reduce((sum, fp) => sum + fp.rooms.length, 0) || 0
+)
+
 function toggleArray(key, value) {
   const idx = form[key].indexOf(value)
   if (idx >= 0) {
@@ -261,6 +304,7 @@ function getRoomStyle(name) {
 
 function generate() {
   result.value = generateFloorPlan({ ...form })
+  activeFloor.value = 1
   tab.value = 'result'
 }
 

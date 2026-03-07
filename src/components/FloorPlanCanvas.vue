@@ -31,10 +31,15 @@
           <circle cx="2" cy="4" r="1.5" fill="rgba(60,160,60,0.25)" />
           <circle cx="7" cy="8" r="1" fill="rgba(60,160,60,0.2)" />
         </pattern>
+        <pattern id="upper-bg" patternUnits="userSpaceOnUse" width="10" height="10">
+          <rect width="10" height="10" fill="#B8C8D8" />
+          <rect x="0" y="0" width="10" height="10" fill="rgba(255,255,255,0.08)" />
+        </pattern>
       </defs>
 
-      <!-- Grass background -->
-      <rect x="0" y="0" :width="svgW" :height="svgH" fill="url(#grass-bg)" />
+      <!-- Background (grass for ground, neutral for upper) -->
+      <rect x="0" y="0" :width="svgW" :height="svgH"
+        :fill="floorNumber > 1 ? 'url(#upper-bg)' : 'url(#grass-bg)'" />
 
       <!-- Grid lines -->
       <line
@@ -48,7 +53,7 @@
         stroke="rgba(0,0,0,0.05)" stroke-width="0.5"
       />
 
-      <!-- Room fills -->
+      <!-- Pass 1: Room fills -->
       <g v-for="(room, i) in rooms" :key="'fill-' + i">
         <rect
           :x="room.x * cell" :y="room.y * cell"
@@ -63,38 +68,29 @@
         />
       </g>
 
-      <!-- Room walls + doors -->
-      <g v-for="(room, i) in rooms" :key="'wall-' + i">
-        <rect
-          :x="room.x * cell" :y="room.y * cell"
-          :width="room.width * cell" :height="room.height * cell"
-          fill="none" :stroke="getRoomStyle(room.name).stroke"
-          :stroke-width="wallWidth" rx="1"
-        />
-        <!-- Door opening -->
+      <!-- Pass 2: Wall segments (with door gaps) -->
+      <g v-for="(seg, i) in wallSegments" :key="'ws-' + i">
         <line
-          :x1="room.x * cell + room.width * cell / 2 - doorSize / 2"
-          :y1="room.y * cell + room.height * cell - wallWidth / 2"
-          :x2="room.x * cell + room.width * cell / 2 + doorSize / 2"
-          :y2="room.y * cell + room.height * cell - wallWidth / 2"
-          :stroke="getRoomStyle(room.name).fill" :stroke-width="wallWidth + 1"
-        />
-        <line
-          :x1="room.x * cell + room.width * cell / 2 - doorSize / 2"
-          :y1="room.y * cell + room.height * cell - wallWidth / 2"
-          :x2="room.x * cell + room.width * cell / 2 + doorSize / 2"
-          :y2="room.y * cell + room.height * cell - wallWidth / 2"
-          stroke="white" :stroke-width="wallWidth - 1"
-        />
-        <!-- Door swing arc -->
-        <path
-          :d="`M ${room.x * cell + room.width * cell / 2 - doorSize / 2} ${room.y * cell + room.height * cell - wallWidth} A ${doorSize} ${doorSize} 0 0 1 ${room.x * cell + room.width * cell / 2 + doorSize / 2} ${room.y * cell + room.height * cell - wallWidth}`"
-          fill="none" :stroke="getRoomStyle(room.name).stroke"
-          stroke-width="0.8" opacity="0.5" stroke-dasharray="2,2"
+          :x1="seg.x1" :y1="seg.y1" :x2="seg.x2" :y2="seg.y2"
+          :stroke="seg.stroke" :stroke-width="wallWidth" stroke-linecap="round"
         />
       </g>
 
-      <!-- Room labels -->
+      <!-- Pass 3: Door symbols -->
+      <g v-for="(door, i) in doors" :key="'door-' + i">
+        <!-- Door panel lines -->
+        <line
+          :x1="door.p1x" :y1="door.p1y" :x2="door.p2x" :y2="door.p2y"
+          stroke="#555" :stroke-width="wallWidth * 0.6" stroke-linecap="round"
+        />
+        <!-- Door swing arc -->
+        <path
+          :d="door.arc" fill="none" stroke="#777"
+          stroke-width="0.7" opacity="0.4" stroke-dasharray="2,2"
+        />
+      </g>
+
+      <!-- Pass 4: Room labels -->
       <g v-for="(room, i) in rooms" :key="'label-' + i">
         <text
           v-if="room.height * cell > 30 && room.width * cell > 30"
@@ -116,6 +112,22 @@
           font-family="'Nunito', sans-serif"
         >
           {{ room.name }}
+        </text>
+      </g>
+
+      <!-- Pass 5: Annotation pins -->
+      <g v-for="(ann, i) in annotations" :key="'pin-' + i">
+        <circle
+          :cx="pinX(ann)" :cy="pinY(ann)"
+          r="8" fill="#16a34a" stroke="white" stroke-width="1.5"
+        />
+        <text
+          :x="pinX(ann)" :y="pinY(ann)"
+          text-anchor="middle" dominant-baseline="central"
+          font-size="9" font-weight="800" fill="white"
+          font-family="'Nunito', sans-serif"
+        >
+          {{ i + 1 }}
         </text>
       </g>
 
@@ -142,11 +154,14 @@
 <script setup>
 import { computed } from 'vue'
 import { ROOM_STYLES, DEFAULT_ROOM_STYLE } from '@/data/floorPlanData'
+import { findAdjacencies, getWallGaps, computeDoors } from '@/utils/floorPlanWalls'
 
 const props = defineProps({
   rooms: { type: Array, required: true },
   lotW: { type: Number, required: true },
-  lotH: { type: Number, required: true }
+  lotH: { type: Number, required: true },
+  annotations: { type: Array, default: () => [] },
+  floorNumber: { type: Number, default: 1 }
 })
 
 const MAX_W = 660
@@ -159,7 +174,72 @@ const cell = computed(() =>
 const svgW = computed(() => props.lotW * cell.value)
 const svgH = computed(() => props.lotH * cell.value)
 const wallWidth = computed(() => Math.max(1.5, cell.value * 0.14))
-const doorSize = computed(() => cell.value * 1.2)
+
+// ─── Adjacency-aware walls & doors ──────────────────────────────────────────
+
+const adjacencies = computed(() => findAdjacencies(props.rooms))
+
+const doors = computed(() => computeDoors(adjacencies.value, cell.value))
+
+/** Build wall segments with gaps cut for doors. */
+const wallSegments = computed(() => {
+  const c = cell.value
+  const segs = []
+
+  props.rooms.forEach((room, idx) => {
+    const style = getRoomStyle(room.name)
+    const rx = room.x * c
+    const ry = room.y * c
+    const rw = room.width * c
+    const rh = room.height * c
+
+    // For each side, get gaps and draw segments around them
+    const sides = [
+      { side: 'top',    fixed: ry,      start: rx,      end: rx + rw, axis: 'h' },
+      { side: 'bottom', fixed: ry + rh, start: rx,      end: rx + rw, axis: 'h' },
+      { side: 'left',   fixed: rx,      start: ry,      end: ry + rh, axis: 'v' },
+      { side: 'right',  fixed: rx + rw, start: ry,      end: ry + rh, axis: 'v' }
+    ]
+
+    for (const { side, fixed, start, end, axis } of sides) {
+      const gaps = getWallGaps(idx, side, room, adjacencies.value, c)
+
+      if (gaps.length === 0) {
+        // No doors on this side — full wall
+        if (axis === 'h') {
+          segs.push({ x1: start, y1: fixed, x2: end, y2: fixed, stroke: style.stroke })
+        } else {
+          segs.push({ x1: fixed, y1: start, x2: fixed, y2: end, stroke: style.stroke })
+        }
+      } else {
+        // Sort gaps and draw wall around them
+        gaps.sort((a, b) => a.from - b.from)
+        let cursor = start
+        for (const gap of gaps) {
+          if (gap.from > cursor) {
+            if (axis === 'h') {
+              segs.push({ x1: cursor, y1: fixed, x2: gap.from, y2: fixed, stroke: style.stroke })
+            } else {
+              segs.push({ x1: fixed, y1: cursor, x2: fixed, y2: gap.from, stroke: style.stroke })
+            }
+          }
+          cursor = gap.to
+        }
+        if (cursor < end) {
+          if (axis === 'h') {
+            segs.push({ x1: cursor, y1: fixed, x2: end, y2: fixed, stroke: style.stroke })
+          } else {
+            segs.push({ x1: fixed, y1: cursor, x2: fixed, y2: end, stroke: style.stroke })
+          }
+        }
+      }
+    }
+  })
+
+  return segs
+})
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function getRoomStyle(name) {
   return ROOM_STYLES[name] || DEFAULT_ROOM_STYLE
@@ -168,5 +248,18 @@ function getRoomStyle(name) {
 function labelFontSize(room) {
   const w = room.width * cell.value
   return Math.max(5, Math.min(8, w / Math.max(room.name.length, 1) * 1.2))
+}
+
+/** Position annotation pin at top-right corner of its room. */
+function pinX(ann) {
+  const room = props.rooms.find(r => r.name === ann.room)
+  if (!room) return 0
+  return (room.x + room.width) * cell.value - 12
+}
+
+function pinY(ann) {
+  const room = props.rooms.find(r => r.name === ann.room)
+  if (!room) return 0
+  return room.y * cell.value + 12
 }
 </script>
