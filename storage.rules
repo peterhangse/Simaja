@@ -2,9 +2,10 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /{allPaths=**} {
-      // Allow uploads up to 5MB
+      // Allow uploads up to 5MB — inloggade only; läsning av spelbilder är publik
       allow read: if true;
-      allow write: if request.resource.size < 5 * 1024 * 1024
+      allow write: if request.auth != null
+                   && request.resource.size < 5 * 1024 * 1024
                    && request.resource.contentType.matches('image/.*');
     }
   }
